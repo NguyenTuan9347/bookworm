@@ -3,13 +3,25 @@ from typing import List, Optional
 
 from sqlmodel import Column, Numeric
 from sqlmodel import Field, Relationship, SQLModel
-from backend.models.categories import Category, CategoryRead
-from backend.models.authors import Author, AuthorRead 
-from backend.models.reviews import Review
-from backend.models.discounts import Discount
-from backend.models.orders import OrderItem
+from models.categories import Category, CategoryRead
+from models.authors import Author, AuthorRead 
+from models.reviews import Review, ReviewRead
+from models.discounts import Discount
+from models.orders import OrderItem
+from enum import Enum
 
+class AllowedPageSize(int, Enum):
+    FIVE = 5
+    FIFTEEN = 15
+    TWENTY = 20
+    TWENTY_FIVE = 25
 
+class SortByOptions(str, Enum):
+    default = "default"
+    popularity = "popularity"
+    price_asc = "price_asc"
+    price_desc = "price_desc"
+    
 class BookBase(SQLModel):
   book_title: str = Field(index=True, max_length=255)
   book_summary: Optional[str] = Field(default=None) 
@@ -20,9 +32,8 @@ class BookBase(SQLModel):
 
 class Book(BookBase, table=True):
   id: Optional[int] = Field(default=None, primary_key=True)
-
-  category: Category = Relationship(back_populates="books")
-  author: Author = Relationship(back_populates="books")
+  category: "Category" = Relationship(back_populates="books")
+  author: "Author" = Relationship(back_populates="books")
   reviews: List["Review"] = Relationship(back_populates="book")
   discounts: List["Discount"] = Relationship(back_populates="book")
   order_items: List["OrderItem"] = Relationship(back_populates="book")
@@ -34,5 +45,7 @@ class BookRead(BookBase):
   id: int
 
 class BookReadWithDetails(BookRead):
-  category: CategoryRead
-  author: AuthorRead
+  category: "CategoryRead"
+  author: "AuthorRead"
+  reviews: List["ReviewRead"] = Relationship(back_populates="book")
+

@@ -5,7 +5,9 @@ from typing import Optional
 
 from sqlmodel import Column, Numeric
 from sqlmodel import Field, Relationship, SQLModel
-from backend.models.books import Book, BookRead
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+  from models.books import Book
 
 class DiscountBase(SQLModel):
   book_id: int = Field(foreign_key="book.id", index=True)
@@ -18,14 +20,12 @@ class DiscountBase(SQLModel):
 class Discount(DiscountBase, table=True):
   id: Optional[int] = Field(default=None, primary_key=True)
 
-  book: Book = Relationship(back_populates="discounts")
+  book: "Book" = Relationship(back_populates="discounts")
 
 class DiscountCreate(DiscountBase):
   pass
 
 class DiscountRead(DiscountBase):
   id: int
-
-class DiscountReadWithBook(DiscountRead):
-  book: BookRead 
+  
 

@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import col, delete, func, select
 
 from backend import crud
-from backend.controllers.deps import CurrentUser
-from backend.models.users import UserRead
+from controllers.deps import CurrentUser
+from models.users import UserRead
 
 router = APIRouter(prefix="/users", tags=["users"])
 

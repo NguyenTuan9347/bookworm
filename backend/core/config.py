@@ -135,6 +135,8 @@ class Settings:
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
+        return "sqlite:////home/ryu/Work/bookworm/backend/test.db" #TO DO CHANGE TO POSTGRE
+    
         scheme = "postgresql"
         user = self.POSTGRES_USER
         password = f":{self.POSTGRES_PASSWORD}" if self.POSTGRES_PASSWORD else ""

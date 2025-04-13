@@ -5,21 +5,21 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel 
 
-from backend.repositories.users import authenticate 
-from backend.controllers.deps import SessionDep, TokenDep 
-from backend.core import security
-from backend.core.config import settings
-from backend.models.tokens import Token, RefreshTokenRequest
-from backend.shared.const_var import ErrorMessages, SuccessMessages 
-from backend.models.tokens import TokenPayload
+from repositories.users import authenticate 
+from controllers.deps import SessionDep, TokenDep 
+from core import security
+from core.config import settings
+from models.tokens import Token, RefreshTokenRequest
+from shared.const_var import ErrorMessages, SuccessMessages 
+from models.tokens import TokenPayload
     
 
 router = APIRouter(tags=["login"])
 
 @router.post("/login", response_model=Token)
 def login(
-    db_session: SessionDep,
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+  db_session: SessionDep,
+  form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
 ) -> Token:
 
   email = form_data.username

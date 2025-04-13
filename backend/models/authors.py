@@ -5,7 +5,10 @@ from typing import List, Optional
 from sqlalchemy import Column, DateTime, Numeric
 from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
-from books import Book, BookRead
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+  from models.books import Book
 
 class AuthorBase(SQLModel):
   author_name: str = Field(index=True, max_length=255)
@@ -22,5 +25,3 @@ class AuthorCreate(AuthorBase):
 class AuthorRead(AuthorBase):
   id: int
 
-class AuthorReadWithBooks(AuthorRead):
-  books: List["BookRead"] = []

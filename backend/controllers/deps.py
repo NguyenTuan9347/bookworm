@@ -8,11 +8,14 @@ from jwt.exceptions import InvalidTokenError
 from pydantic import ValidationError
 from sqlmodel import Session
 
-from backend.core import security
-from backend.core.config import settings
-from backend.core.db import engine
-from backend.models.users import User
-from backend.models.tokens import TokenPayload
+from core import security
+from core.config import settings
+from sqlmodel import create_engine
+
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
+
+from models.users import User
+from models.tokens import TokenPayload
 
 
 reusable_oauth2 = OAuth2PasswordBearer(

@@ -5,7 +5,9 @@ from typing import List, Optional
 from sqlalchemy import Column, DateTime, Numeric
 from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
-from books import Book, BookRead
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+  from models.books import Book
 
 
 class CategoryBase(SQLModel):
@@ -23,5 +25,3 @@ class CategoryCreate(CategoryBase):
 class CategoryRead(CategoryBase):
   id: int
 
-class CategoryReadWithBooks(CategoryRead):
-  books: List["BookRead"] = []

@@ -1,7 +1,7 @@
 from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship
 
-from backend.models.orders import Order, OrderRead
+from models.orders import Order, OrderRead
 
 class UserBase(SQLModel):
   first_name: str = Field(max_length=50)
@@ -12,7 +12,6 @@ class UserBase(SQLModel):
 class User(UserBase, table=True):
   id: Optional[int] = Field(default=None, primary_key=True)
   password: str = Field(max_length=255)
-
   orders: List["Order"] = Relationship(back_populates="user")
 
 class UserCreate(UserBase):
@@ -24,10 +23,9 @@ class UserRead(UserBase):
 class UserReadWithOrders(UserRead):
   orders: List["OrderRead"] = []
 
-class UserUpdate(SQLModel): # Separate model for updates if needed
+class UserUpdate(SQLModel): 
   first_name: Optional[str] = None
   last_name: Optional[str] = None
-  email: Optional[str] = None # Consider validation if email can be updated
+  email: Optional[str] = None 
   admin: Optional[bool] = None
-  # Password updates usually have a separate endpoint/process
-
+  password: Optional[str] = None
