@@ -135,7 +135,7 @@ class Settings:
 
     @property
     def SQLALCHEMY_DATABASE_URI(self) -> str:
-        return "sqlite:////home/ryu/Work/bookworm/backend/test.db" #TO DO CHANGE TO POSTGRE
+        return "sqlite://///home/min/School/Rookies/book_app/backend/test.db" #TO DO CHANGE TO POSTGRE
     
         scheme = "postgresql"
         user = self.POSTGRES_USER
