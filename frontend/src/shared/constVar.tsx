@@ -1,6 +1,6 @@
 export const constVar = {
   links: [
-    { label: "Home", ref: "/home" },
+    { label: "Home", ref: "/" },
     { label: "Shop", ref: "/shop" },
     { label: "About", ref: "/about" },
   ],

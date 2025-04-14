@@ -1,21 +1,20 @@
-import NavBar from "./components/NavBar/NavBar";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import "./App.css";
-import { constVar } from "./shared/constVar";
-import { useCart } from "./hooks/Cart/useCart";
-import Footer from "./components/Footer/Footer";
+
+import Layout from "./components/Layout/Layout";
+import HomePage from "./pages/HomePage/HomePage";
+import AboutPage from "./pages/AboutPage/AboutPage";
 
 function App() {
-  const [cart, setCartCount] = useCart();
-
   return (
-    <>
-      <NavBar
-        links={constVar.links}
-        signInMetadata={constVar.signInMetadata}
-        cart={cart}
-      />
-      <Footer {...constVar.additionalInfo} />
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   );
 }
 

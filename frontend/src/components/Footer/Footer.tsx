@@ -2,7 +2,7 @@ import { AdditionalInfo } from "../../shared/interfaces";
 
 const Footer = (additionalInfo: AdditionalInfo) => {
   return (
-    <footer className="fixed flex flex-row bottom-0 left-0 w-full px-4 py-3 bg-gray-100 items-center">
+    <footer className="fixed flex flex-row bottom-0 left-0 w-full px-4 py-3 bg-gray-200 items-center">
       <div className="flex items-center w-full">
         <img
           src="https://placehold.co/64x64"

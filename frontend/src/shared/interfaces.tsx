@@ -3,8 +3,9 @@ export interface Link {
   label: string;
 }
 
-export interface Cart extends Link {
+export interface CartState extends Link {
   countItem: number;
+  setCount: (newCount: number) => void;
 }
 
 export interface AdditionalInfo {
@@ -17,7 +18,6 @@ export interface AdditionalInfo {
 export interface NavBarProps {
   links: Link[];
   signInMetadata: Link;
-  cart: Cart;
 }
 
 export interface UserProfileCardProps {
