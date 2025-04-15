@@ -29,27 +29,28 @@ export interface NavBarProps {
   signInMetadata: Link;
 }
 
-export interface BookProfile {
+export interface BookProfileProp {
   book_title: string;
   book_cover_photo?: string;
   author_id?: string;
   book_price: number;
 }
 
-export interface DiscountedBookProfileCard extends BookProfile {
+export interface DiscountedBookProfileCardProp extends BookProfileProp {
   discount_price: number;
 }
 
 export interface CarouselDiscountedBookProps {
-  books?: DiscountedBookProfileCard[];
+  books?: DiscountedBookProfileCardProp[];
 }
 
 export interface BookProfileCardProps {
-  book: DiscountedBookProfileCard;
+  book: DiscountedBookProfileCardProp;
   index: number;
 }
+
 export interface BookGridProps {
-  books?: DiscountedBookProfileCard[];
+  books?: DiscountedBookProfileCardProp[];
   col_size: number;
   row_size: number;
   className?: string;
@@ -58,7 +59,7 @@ export interface BookGridProps {
 export type AllowedPageSize = 5 | 15 | 20 | 25;
 
 export type SortByOptions =
-  | "default"
+  | "on_sale"
   | "popularity"
   | "price_asc"
   | "price_desc";

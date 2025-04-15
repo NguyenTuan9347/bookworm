@@ -201,11 +201,11 @@ def main():
         init_db(session)
         generate_fake_data(
             session=session,
-            num_authors=200,
-            num_categories=100,
-            num_books=10000,
-            num_discounts=5000,
-            num_reviews=2000  # Added parameter for reviews
+            num_authors=2000,
+            num_categories=1000,
+            num_books=100000,
+            num_discounts=10000,
+            num_reviews=20000
         )
 
 if __name__ == "__main__":

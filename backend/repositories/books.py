@@ -197,7 +197,7 @@ def get_top_k_featured(session: Session, sort_by: FeaturedSortOptions, k: int) -
 
     query_with_aggregates = (
         base_query 
-        .join(Review, Review.book_id == Book.id, isouter=True) #
+        .join(Review, Review.book_id == Book.id, isouter=True)
         .group_by(Book.id) 
         .add_columns(
             func.count(Review.id).label(review_count_label),

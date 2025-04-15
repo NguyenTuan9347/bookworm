@@ -11,21 +11,21 @@ from models.orders import OrderItem
 from enum import Enum
 
 class AllowedPageSize(int, Enum):
-    FIVE = 5
-    FIFTEEN = 15
-    TWENTY = 20
-    TWENTY_FIVE = 25
+  FIVE = 5
+  FIFTEEN = 15
+  TWENTY = 20
+  TWENTY_FIVE = 25
 
 class SortByOptions(str, Enum):
-    default = "default"
-    popularity = "popularity"
-    price_asc = "price_asc"
-    price_desc = "price_desc"
+  default = "on_sale"
+  popularity = "popularity"
+  price_asc = "price_asc"
+  price_desc = "price_desc"
 
 class FeaturedSortOptions(str, Enum):
-    RECOMMENDED = "recommended" 
-    POPULAR = "popular"       
-    
+  RECOMMENDED = "recommended" 
+  POPULAR = "popular"       
+  
 class BookBase(SQLModel):
   book_title: str = Field(index=True, max_length=255)
   book_summary: Optional[str] = Field(default=None) 

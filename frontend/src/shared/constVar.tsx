@@ -1,3 +1,12 @@
+import { AllowedPageSize, SortByOptions } from "./interfaces";
+export const allowedPageSizes: AllowedPageSize[] = [5, 15, 25];
+export const sortByOptions: SortByOptions[] = [
+  "on_sale",
+  "popularity",
+  "price_asc",
+  "price_desc",
+];
+
 export const constVar = {
   links: [
     { label: "Home", ref: "/" },

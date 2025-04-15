@@ -4,17 +4,17 @@ import { fetchApi } from "../api/core";
 import {
   ListBooksParams,
   PaginatedResponse,
-  DiscountedBookProfileCard,
+  DiscountedBookProfileCardProp,
   ListMostDiscountedBooksParams,
   ListFeaturedBooksParams,
 } from "@/shared/interfaces";
 
 export function fetchListBooks(
   params: ListBooksParams = {}
-): Promise<PaginatedResponse<DiscountedBookProfileCard>> {
+): Promise<PaginatedResponse<DiscountedBookProfileCardProp>> {
   const apiParams = { ...params };
 
-  return fetchApi<PaginatedResponse<DiscountedBookProfileCard>>("/books", {
+  return fetchApi<PaginatedResponse<DiscountedBookProfileCardProp>>("/books", {
     method: "GET",
     params: apiParams,
   });
@@ -22,10 +22,10 @@ export function fetchListBooks(
 
 export function fetchMostDiscountedBooks(
   params: ListMostDiscountedBooksParams = {}
-): Promise<DiscountedBookProfileCard[]> {
+): Promise<DiscountedBookProfileCardProp[]> {
   const apiParams = { top_k: params.top_k };
 
-  return fetchApi<DiscountedBookProfileCard[]>(
+  return fetchApi<DiscountedBookProfileCardProp[]>(
     constVar.api_routes.books.topDiscountAmount.path,
     {
       method: "GET",
@@ -36,10 +36,10 @@ export function fetchMostDiscountedBooks(
 
 export function fetchFeaturedBooks(
   params: ListFeaturedBooksParams = {}
-): Promise<DiscountedBookProfileCard[]> {
+): Promise<DiscountedBookProfileCardProp[]> {
   const apiParams = { ...params };
 
-  return fetchApi<DiscountedBookProfileCard[]>(
+  return fetchApi<DiscountedBookProfileCardProp[]>(
     constVar.api_routes.books.featured.path,
     {
       method: "GET",
