@@ -21,6 +21,10 @@ class SortByOptions(str, Enum):
     popularity = "popularity"
     price_asc = "price_asc"
     price_desc = "price_desc"
+
+class FeaturedSortOptions(str, Enum):
+    RECOMMENDED = "recommended" 
+    POPULAR = "popular"       
     
 class BookBase(SQLModel):
   book_title: str = Field(index=True, max_length=255)
@@ -43,6 +47,7 @@ class BookCreate(BookBase):
 
 class BookRead(BookBase):
   id: int
+  discount_price: Optional[Decimal] = Field(sa_column=Column(Numeric(5, 2)))
 
 class BookReadWithDetails(BookRead):
   category: "CategoryRead"

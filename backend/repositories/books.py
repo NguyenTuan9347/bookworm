@@ -1,15 +1,15 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict, Any
 from datetime import date
-from sqlmodel import Session, select, func, and_, or_, case, desc, asc, Float
+from sqlmodel import Session, select, func, and_, or_, case, desc, asc, Float, SQLModel
 from sqlalchemy.sql.expression import label
 from models import Book, Discount, Category, Author, Review
 from models.paging_info import PaginatedResponse, PagingInfo
-from models.books import SortByOptions, AllowedPageSize
+from models.books import SortByOptions, AllowedPageSize, BookRead, FeaturedSortOptions
 
 
-def construct_base_book_query():
+def construct_base_book_query() -> Tuple[Any, str, str, str, str]:
     current_date = date.today()
-    effective_price_label = "effective_price"
+    effective_price_label = "discount_price"
     discount_percent_label = "discount_percent"
 
     discount_subquery = (
@@ -30,7 +30,7 @@ def construct_base_book_query():
         .subquery()
     )
 
-    return (
+    query = (
         select(
             Book,
             label(
@@ -40,8 +40,8 @@ def construct_base_book_query():
                         discount_subquery.c.min_discount_price != None,
                         discount_subquery.c.min_discount_price
                     ),
-                    else_=Book.book_price
-                )
+                    else_= Book.book_price
+                ).cast(Float)
             ),
             label(
                 discount_percent_label,
@@ -50,14 +50,13 @@ def construct_base_book_query():
                         discount_subquery.c.min_discount_price != None,
                         ((Book.book_price - discount_subquery.c.min_discount_price) / Book.book_price) * 100
                     ),
-                    else_=0
-                )
+                    else_=0.0
+                ).cast(Float)
             )
         )
-        .select_from(Book)
         .join(discount_subquery, discount_subquery.c.book_id == Book.id, isouter=True)
-    ), effective_price_label, discount_percent_label
-
+    )
+    return query, effective_price_label, discount_percent_label
 
 
 def get_books(
@@ -70,6 +69,8 @@ def get_books(
     min_rating: Optional[int] = None
 ) -> PaginatedResponse:
     base_query, effective_price_label, discount_percent_label = construct_base_book_query()
+    review_count_label = "review_count"
+    average_rating_label = "average_rating"
 
     filtered_query = base_query
     if category_name:
@@ -88,7 +89,8 @@ def get_books(
         )
         filtered_query = filtered_query.join(rating_subquery, rating_subquery.c.book_id == Book.id)
 
-    count_query = select(func.count()).select_from(filtered_query)
+    count_subquery = filtered_query.with_only_columns(Book.id).distinct().subquery()
+    count_query = select(func.count()).select_from(count_subquery)
     try:
         total_items = session.exec(count_query).one()
     except Exception as e:
@@ -97,27 +99,41 @@ def get_books(
 
     result_query = filtered_query
     if sort_by == SortByOptions.popularity:
-        review_count = func.count(Review.id).label("review_count")
-        avg_rating = func.coalesce(func.avg(Review.rating_start), 0.0).cast(Float).label("average_rating")
+        review_count_label = "review_count"
+        avg_rating_label = "average_rating"
+        group_by_cols = [Book.id] 
+        
         result_query = (
             result_query
-            .join(Review, isouter=True)
-            .group_by(Book.id, effective_price_label, discount_percent_label)
-            .add_columns(review_count, avg_rating)
-            .order_by(desc("review_count"), asc(effective_price_label))
+            .join(Review, Review.book_id == Book.id, isouter=True)
+            .group_by(*group_by_cols)
+            .add_columns(
+                func.count(Review.id).label(review_count_label),
+                func.coalesce(func.avg(Review.rating_start), 0.0).cast(Float).label(avg_rating_label)
+             )
+            .order_by(desc(review_count_label), asc(effective_price_label))
         )
     elif sort_by == SortByOptions.default:
-        result_query = result_query.order_by(desc(effective_price_label), asc(discount_percent_label))
+        result_query = result_query.order_by(desc(discount_percent_label), asc(effective_price_label))
     elif sort_by == SortByOptions.price_asc:
         result_query = result_query.order_by(asc(effective_price_label))
     elif sort_by == SortByOptions.price_desc:
         result_query = result_query.order_by(desc(effective_price_label))
 
     result_query = result_query.offset((page - 1) * page_size).limit(page_size)
-
+    labels = [effective_price_label, effective_price_label, discount_percent_label, review_count_label, average_rating_label]
+    items = []
     try:
         results = session.exec(result_query).all()
-        items = [row.Book if hasattr(row, 'Book') else row for row in results]
+        for row in results:
+            data = row._mapping
+            book: Book = data["Book"]
+            book_data = book.model_dump()
+            for label in labels:
+                if label in data:
+                    book_data[label] = data[label]
+            items.append(BookRead(**book_data))
+
     except Exception as e:
         print(f"Data query failed: {e}")
         items = []
@@ -136,7 +152,6 @@ def get_books(
     return PaginatedResponse(data=items, paging=paging_info)
 
 
-
 def get_book_by_id(session: Session, book_id: int) -> Optional[Book]:
     try:
         book = session.get(Book, book_id)
@@ -144,3 +159,84 @@ def get_book_by_id(session: Session, book_id: int) -> Optional[Book]:
     except Exception as e:
         print(f"Database query failed: {e}")
         return None
+    
+
+
+
+def get_top_k_discounted_books(session: Session, k: int = 10) -> List[BookRead]:
+    result_query, effective_price_label, discount_percent_label = construct_base_book_query()
+    
+    result_query = result_query.order_by(desc(discount_percent_label))
+    
+    result_query = result_query.limit(k)
+
+    labels = [effective_price_label, effective_price_label, discount_percent_label]
+    items = []
+    try:
+        results = session.exec(result_query).all()
+        for row in results:
+            data = row._mapping
+            book: Book = data["Book"]
+            book_data = book.model_dump()
+            for label in labels:
+                if label in data:
+                    book_data[label] = data[label]
+            items.append(BookRead(**book_data))
+
+    except Exception as e:
+        print(f"Data query failed: {e}")
+    
+    return items
+
+
+def get_top_k_featured(session: Session, sort_by: FeaturedSortOptions, k: int) -> List[BookRead]:
+    base_query, effective_price_label, discount_percent_label = construct_base_book_query()
+
+    avg_rating_label = "average_rating"
+    review_count_label = "review_count"
+
+    query_with_aggregates = (
+        base_query 
+        .join(Review, Review.book_id == Book.id, isouter=True) #
+        .group_by(Book.id) 
+        .add_columns(
+            func.count(Review.id).label(review_count_label),
+            func.coalesce(func.avg(Review.rating_start), 0.0).cast(Float).label(avg_rating_label)
+        )
+    )
+
+    if sort_by == FeaturedSortOptions.RECOMMENDED:
+        result_query = query_with_aggregates.order_by(
+            desc(avg_rating_label),
+            asc(effective_price_label) 
+        )
+    elif sort_by == FeaturedSortOptions.POPULAR:
+        result_query = query_with_aggregates.order_by(
+            desc(review_count_label),
+            asc(effective_price_label) 
+        )
+    else:
+         raise ValueError(f"Unsupported sort_by value for featured books: {sort_by}")
+
+    result_query = result_query.limit(k)
+
+    all_calculated_labels = [effective_price_label, discount_percent_label, review_count_label, avg_rating_label]
+    items = []
+    try:
+        results = session.exec(result_query).all()
+        for row in results:
+            data = row._mapping 
+            book: Book = data["Book"]
+            book_data = book.model_dump() 
+            
+            for label in all_calculated_labels:
+                if label in data:
+                    book_data[label] = data[label]
+
+            items.append(BookRead(**book_data))
+
+    except Exception as e:
+        print(f"Data query failed for featured books (sort_by={sort_by}): {e}")
+        items = [] 
+        
+    return items

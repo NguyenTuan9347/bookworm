@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 class DiscountBase(SQLModel):
   book_id: int = Field(foreign_key="book.id", index=True)
   discount_start_date: datetime.date
-  discount_end_date: datetime.date
+  discount_end_date: Optional[datetime.date]
   discount_price: Decimal = Field(
     sa_column=Column(Numeric(5, 2))
   )

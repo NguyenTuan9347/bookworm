@@ -4,3 +4,4 @@ alembic
 Faker
 PyJWT
 passlib[bcrypt]
+bcrypt

@@ -13,7 +13,7 @@ from models.books import Book, BookCreate
 from repositories.users import create_user
 from models.discounts import Discount, DiscountCreate
 from models.reviews import Review, ReviewCreate  # Import the new models
-
+random.seed("2112")
 fake = Faker()
 
 def gen_author(fake: Faker = fake) -> AuthorCreate:
@@ -45,16 +45,36 @@ def gen_book(author_id: int, category_id: int) -> BookCreate:
     )
 
 def gen_discount(book_id: int, book_price: Decimal) -> Discount:
-    """Generate a Discount instance with valid book relationship"""
-    # Calculate discounted price
-    discount_percent = random.choice([10, 15, 20, 25, 30])
-    multiplier = Decimal(100 - discount_percent) / 100
-    discount_price = book_price * multiplier
-    discount_price = discount_price.quantize(Decimal("0.01"))
+    # --- Existing book_price calculation logic ---
+    discount_percent = Decimal(random.uniform(10.0, 60.0))
+    multiplier = (Decimal(100) - discount_percent) / Decimal(100)
+    calculated_price = (book_price * multiplier).quantize(Decimal('0.01'))
+    absolute_min_price = Decimal('0.99')
+    discount_price = max(absolute_min_price, calculated_price)
+    if discount_price >= book_price:
+        discount_price = book_price - Decimal('0.01')
+        discount_price = max(absolute_min_price, discount_price)
+        if discount_price < 0:
+             discount_price = absolute_min_price
     
-    # Generate valid date range
-    start_date = fake.future_date(end_date="+30d")
-    end_date = start_date + timedelta(days=random.randint(7, 60))
+    from datetime import date
+    today = date.today()
+    start_date_options = [
+        fake.date_between(start_date="-60d", end_date="-1d"),  
+        today,                                                 
+        fake.future_date(end_date="+30d")
+    ]
+    start_date = random.choice(start_date_options)
+
+    if start_date >= today: 
+        end_date = start_date + timedelta(days=random.randint(7, 90))
+    else: 
+        end_date_options = [
+            fake.date_between(start_date=start_date + timedelta(days=1), end_date="-1d"), 
+            fake.date_between(start_date=today, end_date="+90d"),                       
+            None                                                                        
+        ]
+        end_date = random.choice(end_date_options)
 
     return Discount(
         book_id=book_id,
@@ -181,10 +201,10 @@ def main():
         init_db(session)
         generate_fake_data(
             session=session,
-            num_authors=50,
-            num_categories=20,
-            num_books=800,
-            num_discounts=100,
+            num_authors=200,
+            num_categories=100,
+            num_books=10000,
+            num_discounts=5000,
             num_reviews=2000  # Added parameter for reviews
         )
 

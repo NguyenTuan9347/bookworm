@@ -43,7 +43,7 @@ class OrderItemBase(SQLModel):
   order_id: int = Field(foreign_key="order.id", index=True)
   book_id: int = Field(foreign_key="book.id", index=True)
   quantity: int
-  price: Decimal = Field(sa_column=Column(Numeric(5, 2)))
+  book_price: Decimal = Field(sa_column=Column(Numeric(5, 2)))
 
 class OrderItem(OrderItemBase, table=True):
   __tablename__ = "order_item"

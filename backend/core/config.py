@@ -26,7 +26,7 @@ def parse_cors_value(value: Any) -> List[str]:
         return [value]
 
 class Settings:
-    API_PREFIX_STR: str = "/api"
+    API_PREFIX_STR: str = ""
     REFRESH_TOKEN_KEY: str = "refresh-token"
     SESSION_HTTPS_ONLY: bool = True
     SESSION_HTTP_ONLY: bool = True

@@ -8,7 +8,7 @@ function Layout() {
   return (
     <>
       <NavBar links={constVar.links} signInMetadata={constVar.signInMetadata} />
-      <main className="main-content">
+      <main className="main-content pt-14 px-2 mx-16">
         <Outlet />
       </main>
       <Footer {...constVar.additionalInfo} />
