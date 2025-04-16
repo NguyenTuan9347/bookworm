@@ -32,7 +32,7 @@ export interface NavBarProps {
 export interface BookProfileProp {
   book_title: string;
   book_cover_photo?: string;
-  author_id?: string;
+  author_name?: string;
   book_price: number;
 }
 
@@ -86,4 +86,21 @@ export interface ListBooksParams {
   category?: string;
   author?: string;
   min_rating?: number;
+}
+
+export interface ListPayload<T = string | number> {
+  data: T[];
+  type: string;
+}
+
+export interface FilterBarProps {
+  categories: string[];
+  authors: string[];
+  ratings: string[];
+  selectedCategory: string | null;
+  selectedAuthor: string | null;
+  selectedRating: string | null;
+  onCategoryChange: (category: string | null) => void;
+  onAuthorChange: (author: string | null) => void;
+  onRatingChange: (rating: string | null) => void;
 }

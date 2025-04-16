@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple, Dict, Any
 from datetime import date
 from sqlmodel import Session, select, func, and_, or_, case, desc, asc, Float, SQLModel
+from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import label
 from models import Book, Discount, Category, Author, Review
 from models.paging_info import PaginatedResponse, PagingInfo
@@ -10,7 +11,7 @@ from models.books import SortByOptions, AllowedPageSize, BookRead, FeaturedSortO
 def construct_base_book_query() -> Tuple[Any, str, str, str, str]:
     current_date = date.today()
     effective_price_label = "discount_price"
-    discount_percent_label = "discount_percent"
+    dicount_amount_label = "discount_amount"
 
     discount_subquery = (
         select(
@@ -44,11 +45,11 @@ def construct_base_book_query() -> Tuple[Any, str, str, str, str]:
                 ).cast(Float)
             ),
             label(
-                discount_percent_label,
+                dicount_amount_label,
                 case(
                     (
                         discount_subquery.c.min_discount_price != None,
-                        ((Book.book_price - discount_subquery.c.min_discount_price) / Book.book_price) * 100
+                        (Book.book_price - discount_subquery.c.min_discount_price)
                     ),
                     else_=0.0
                 ).cast(Float)
@@ -56,7 +57,7 @@ def construct_base_book_query() -> Tuple[Any, str, str, str, str]:
         )
         .join(discount_subquery, discount_subquery.c.book_id == Book.id, isouter=True)
     )
-    return query, effective_price_label, discount_percent_label
+    return query, effective_price_label, dicount_amount_label
 
 
 def get_books(
@@ -68,7 +69,7 @@ def get_books(
     author_name: Optional[str] = None,
     min_rating: Optional[int] = None
 ) -> PaginatedResponse:
-    base_query, effective_price_label, discount_percent_label = construct_base_book_query()
+    base_query, effective_price_label, dicount_amount_label = construct_base_book_query()
     review_count_label = "review_count"
     average_rating_label = "average_rating"
 
@@ -114,17 +115,17 @@ def get_books(
             .order_by(desc(review_count_label), asc(effective_price_label))
         )
     elif sort_by == SortByOptions.default:
-        result_query = result_query.order_by(desc(discount_percent_label), asc(effective_price_label))
+        result_query = result_query.order_by(desc(dicount_amount_label), asc(effective_price_label))
     elif sort_by == SortByOptions.price_asc:
         result_query = result_query.order_by(asc(effective_price_label))
     elif sort_by == SortByOptions.price_desc:
         result_query = result_query.order_by(desc(effective_price_label))
 
     result_query = result_query.offset((page - 1) * page_size).limit(page_size)
-    labels = [effective_price_label, effective_price_label, discount_percent_label, review_count_label, average_rating_label]
+    labels = [effective_price_label, effective_price_label, dicount_amount_label, review_count_label, average_rating_label]
     items = []
     try:
-        results = session.exec(result_query).all()
+        results = session.exec(result_query.options(selectinload(Book.author))).all()
         for row in results:
             data = row._mapping
             book: Book = data["Book"]
@@ -132,6 +133,7 @@ def get_books(
             for label in labels:
                 if label in data:
                     book_data[label] = data[label]
+            book_data["author_name"] = book.author.author_name if book.author else None
             items.append(BookRead(**book_data))
 
     except Exception as e:
@@ -164,13 +166,13 @@ def get_book_by_id(session: Session, book_id: int) -> Optional[Book]:
 
 
 def get_top_k_discounted_books(session: Session, k: int = 10) -> List[BookRead]:
-    result_query, effective_price_label, discount_percent_label = construct_base_book_query()
+    result_query, effective_price_label, dicount_amount_label = construct_base_book_query()
     
-    result_query = result_query.order_by(desc(discount_percent_label))
+    result_query = result_query.order_by(desc(dicount_amount_label))
     
     result_query = result_query.limit(k)
 
-    labels = [effective_price_label, effective_price_label, discount_percent_label]
+    labels = [effective_price_label, effective_price_label, dicount_amount_label]
     items = []
     try:
         results = session.exec(result_query).all()
@@ -181,6 +183,7 @@ def get_top_k_discounted_books(session: Session, k: int = 10) -> List[BookRead]:
             for label in labels:
                 if label in data:
                     book_data[label] = data[label]
+            book_data["author_name"] = book.author.author_name if book.author else None
             items.append(BookRead(**book_data))
 
     except Exception as e:
@@ -190,7 +193,7 @@ def get_top_k_discounted_books(session: Session, k: int = 10) -> List[BookRead]:
 
 
 def get_top_k_featured(session: Session, sort_by: FeaturedSortOptions, k: int) -> List[BookRead]:
-    base_query, effective_price_label, discount_percent_label = construct_base_book_query()
+    base_query, effective_price_label, dicount_amount_label = construct_base_book_query()
 
     avg_rating_label = "average_rating"
     review_count_label = "review_count"
@@ -220,7 +223,7 @@ def get_top_k_featured(session: Session, sort_by: FeaturedSortOptions, k: int) -
 
     result_query = result_query.limit(k)
 
-    all_calculated_labels = [effective_price_label, discount_percent_label, review_count_label, avg_rating_label]
+    all_calculated_labels = [effective_price_label, dicount_amount_label, review_count_label, avg_rating_label]
     items = []
     try:
         results = session.exec(result_query).all()
@@ -232,7 +235,8 @@ def get_top_k_featured(session: Session, sort_by: FeaturedSortOptions, k: int) -
             for label in all_calculated_labels:
                 if label in data:
                     book_data[label] = data[label]
-
+                    
+            book_data["author_name"] = book.author.author_name if book.author else None
             items.append(BookRead(**book_data))
 
     except Exception as e:

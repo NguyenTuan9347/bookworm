@@ -1,6 +1,7 @@
 import CarouselDiscountedBook from "../../components/Carousel/Carousel";
 import BookGrid from "@/components/BookGrid/BookGrid";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
 import { fetchMostDiscountedBooks, fetchFeaturedBooks } from "@/api/books";
@@ -23,6 +24,10 @@ const HomePage = () => {
     staleTime: 1000 * 60,
   });
 
+  const navigate = useNavigate();
+  const navToShop = () => {
+    navigate(constVar.links[1].ref);
+  };
   const {
     data: featuredBooks,
     isLoading: isLoadingFeatured,
@@ -60,7 +65,10 @@ const HomePage = () => {
         <div className="sale">
           <div className="header flex flex-row text-center justify-between mb-2 items-center ">
             <h1 className="text-xl font-bold">On Sale</h1>{" "}
-            <button className="bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium rounded-md px-3 py-1 items-center flex gap-1 transition-colors duration-150">
+            <button
+              className="bg-gray-700 hover:bg-gray-600 text-white text-xs font-medium rounded-md px-3 py-1 items-center flex gap-1 transition-colors duration-150"
+              onClick={navToShop}
+            >
               View All
               <svg
                 xmlns="http://www.w3.org/2000/svg"
