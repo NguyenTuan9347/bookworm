@@ -55,9 +55,17 @@ export const constVar = {
 
     auth: {
       login: {
-        path: "/auth/login",
+        path: "/login",
         method: "POST",
         paramsHint: "username, password",
+      },
+      refresh: {
+        method: "POST",
+        path: "/refresh",
+      },
+      logout: {
+        path: "/logout",
+        method: "POST",
       },
     },
     cart: {

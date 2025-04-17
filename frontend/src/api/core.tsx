@@ -5,12 +5,11 @@ const API_BASE = constVar.api_routes.base;
 interface FetchOptions extends RequestInit {
   params?: { [key: string]: string | number | boolean | undefined | null };
 }
-
 export async function fetchApi<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  const { params, body, ...fetchOptions } = options;
+  const { params, body, headers: customHeaders, ...fetchOptions } = options;
   let url = `${API_BASE}${endpoint}`;
 
   if (params) {
@@ -33,13 +32,13 @@ export async function fetchApi<T>(
 
   try {
     const response = await fetch(url, {
-      method: options.method || "GET",
+      ...fetchOptions,
+      method: fetchOptions.method || "GET",
       headers: {
         ...defaultHeaders,
-        ...fetchOptions.headers,
+        ...customHeaders,
       },
-      body: body ? JSON.stringify(body) : undefined,
-      ...fetchOptions,
+      body: body ? body : undefined,
     });
 
     if (!response.ok) {

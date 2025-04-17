@@ -28,9 +28,9 @@ def parse_cors_value(value: Any) -> List[str]:
 class Settings:
     API_PREFIX_STR: str = ""
     REFRESH_TOKEN_KEY: str = "refresh-token"
-    SESSION_HTTPS_ONLY: bool = True
-    SESSION_HTTP_ONLY: bool = True
-    SESSION_SAMESITE_POLICY: str = "lax"
+    COOKIES_HTTPS_ONLY: bool = True
+    COOKIES_HTTP_ONLY: bool = True
+    COOKIES_SAMESITE_POLICY: str = "lax"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_MINUTES: int = 7 * 60 * 24
     FRONTEND_HOST: str = "http://localhost:5173"
@@ -39,8 +39,6 @@ class Settings:
     BACKEND_CORS_ORIGINS_DEFAULT: List[str] = []
     ADMIN_EMAIL: str = "myname@gmail.com"
     ADMIN_PASSWORD: str = "luck2luck"
-    SESSION_COOKIES_NAME: str | None = None
-    SESSION_COOKIES_SECRET_KEY: str | None = None
     POSTGRES_PORT: int = 5432
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
@@ -90,9 +88,9 @@ class Settings:
         self.REFRESH_SECRET_KEY = _get_str("REFRESH_SECRET_KEY", required=True)
         self.REFRESH_TOKEN_KEY = _get_str("REFRESH_TOKEN_KEY", self.REFRESH_TOKEN_KEY)
 
-        self.SESSION_HTTPS_ONLY = _get_bool("SESSION_HTTPS_ONLY", self.SESSION_HTTPS_ONLY)
-        self.SESSION_HTTP_ONLY = _get_bool("SESSION_HTTP_ONLY", self.SESSION_HTTP_ONLY)
-        self.SESSION_SAMESITE_POLICY = _get_str("SESSION_SAMESITE_POLICY", self.SESSION_SAMESITE_POLICY)
+        self.COOKIES_HTTPS_ONLY = _get_bool("COOKIES_HTTPS_ONLY", self.COOKIES_HTTPS_ONLY)
+        self.COOKIES_HTTP_ONLY = _get_bool("COOKIES_HTTP_ONLY", self.COOKIES_HTTP_ONLY)
+        self.COOKIES_SAMESITE_POLICY = _get_str("COOKIES_SAMESITE_POLICY", self.COOKIES_SAMESITE_POLICY)
 
         self.ACCESS_TOKEN_EXPIRE_MINUTES = _get_int("ACCESS_TOKEN_EXPIRE_MINUTES", self.ACCESS_TOKEN_EXPIRE_MINUTES)
         self.REFRESH_TOKEN_EXPIRE_MINUTES = _get_int("REFRESH_TOKEN_EXPIRE_MINUTES", self.REFRESH_TOKEN_EXPIRE_MINUTES)
@@ -115,8 +113,6 @@ class Settings:
 
         self.ADMIN_EMAIL = _get_str("ADMIN_EMAIL", self.ADMIN_EMAIL)
         self.ADMIN_PASSWORD = _get_str("ADMIN_PASSWORD", self.ADMIN_PASSWORD)
-        self.SESSION_COOKIES_NAME = _get_str("SESSION_COOKIES_NAME", self.SESSION_COOKIES_NAME)
-        self.SESSION_COOKIES_SECRET_KEY = _get_str("SESSION_COOKIES_SECRET_KEY", self.SESSION_COOKIES_SECRET_KEY)
 
         self.PROJECT_NAME = _get_str("PROJECT_NAME", required=True)
         self.POSTGRES_SERVER = _get_str("POSTGRES_SERVER", required=True)

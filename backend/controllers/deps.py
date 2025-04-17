@@ -14,12 +14,14 @@ from sqlmodel import create_engine
 
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 
+from core.security import verify_token
+
 from models.users import User
 from models.tokens import TokenPayload
 
 
 reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl=f"{settings.API_PREFIX_STR}/login/access-token"
+    tokenUrl=f"{settings.API_PREFIX_STR}/login"
 )
 
 
@@ -32,10 +34,9 @@ SessionDep = Annotated[Session, Depends(get_db)]
 TokenDep = Annotated[str, Depends(reusable_oauth2)]
 
 def get_current_user_through_header(db_session: SessionDep, token: TokenDep) -> User:
+    
     try:
-        payload = jwt.decode(
-            token, settings.ACCESS_SECRET_KEY, algorithms=[security.ALGORITHM]
-        )
+        payload = verify_token(token, secret_key=settings.ACCESS_SECRET_KEY)
         token_data = TokenPayload(**payload)
     except (InvalidTokenError, ValidationError):
         raise HTTPException(
@@ -45,7 +46,7 @@ def get_current_user_through_header(db_session: SessionDep, token: TokenDep) -> 
     user = db_session.get(User, token_data.sub)
     
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
     return user
 

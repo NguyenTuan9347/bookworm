@@ -1,6 +1,12 @@
+import { ReactNode } from "react";
 export interface Link {
   ref: string;
   label: string;
+}
+
+export interface User {
+  first_name: string;
+  last_name: string;
 }
 
 export interface ListFeaturedBooksParams {
@@ -79,6 +85,11 @@ export interface PaginatedResponse<T> {
   paging: PagingInfo;
 }
 
+export interface ApiError {
+  status?: number;
+  message?: string;
+}
+
 export interface ListBooksParams {
   page?: number;
   page_size?: AllowedPageSize;
@@ -103,4 +114,43 @@ export interface FilterBarProps {
   onCategoryChange: (category: string | null) => void;
   onAuthorChange: (author: string | null) => void;
   onRatingChange: (rating: string | null) => void;
+}
+
+export interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export interface JWTTokenResponse {
+  access_token: string;
+  type: string;
+}
+
+export interface DecodedToken {
+  sub: string | number | null;
+  exp: number;
+}
+
+export interface FetchOptions {
+  method?: string;
+  headers?: Record<string, string>;
+  body?: string;
+  credentials?: "include" | "omit" | "same-origin";
+}
+export interface DropdownProps {
+  trigger: ReactNode;
+  menu: ReactNode[];
+}
+
+export type AuthRequireAPIFetch = <T = unknown>(
+  endpoint: string,
+  options?: FetchOptions
+) => Promise<T>;
+
+export interface AuthContextValue {
+  accessToken: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  logout: () => Promise<void>;
+  authRequireAPIFetch: AuthRequireAPIFetch;
 }

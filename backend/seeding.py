@@ -27,6 +27,10 @@ def gen_category(fake: Faker = fake) -> CategoryCreate:
         category_desc=fake.sentence()
     )
 
+
+def get_random_image():
+    return f"https://picsum.photos/seed/{random.randint(1, 10000)}/200/300"
+
 def gen_book(author_id: int, category_id: int) -> BookCreate:
     """Generate a BookCreate instance with proper relationships"""
     return BookCreate(
@@ -39,7 +43,7 @@ def gen_book(author_id: int, category_id: int) -> BookCreate:
             min_value=5,
             max_value=50
         ),
-        book_cover_photo=fake.image_url() if random.random() < 0.5 else None,
+        book_cover_photo=get_random_image(),
         category_id=category_id,
         author_id=author_id
     )
@@ -189,12 +193,12 @@ def init_db(session: Session) -> None:
             first_name="admin",
             last_name="admin",
             email=settings.ADMIN_EMAIL,
-            password=get_password_hash(settings.ADMIN_PASSWORD),
+            password=settings.ADMIN_PASSWORD,
             admin=True,
         )
         create_user(db_session=session, user_create=user_in)
         session.commit()
-
+        
 def main():
     """Main function to initialize the database and generate sample data."""
     with Session(engine) as session:
@@ -203,8 +207,8 @@ def main():
             session=session,
             num_authors=2000,
             num_categories=1000,
-            num_books=100000,
-            num_discounts=10000,
+            num_books=10000,
+            num_discounts=1000,
             num_reviews=20000
         )
 

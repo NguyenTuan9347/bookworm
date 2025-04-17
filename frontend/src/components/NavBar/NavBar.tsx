@@ -1,18 +1,63 @@
-import { NavBarProps } from "../../shared/interfaces";
+import { useEffect, useState } from "react";
+import { DropdownProps, NavBarProps } from "../../shared/interfaces";
 import { useCartStore } from "../../states/Cart/useCart";
 import "./NavBar.css";
+import { useAuth } from "@/context/Authentication/authContext";
+import LoginPopUp from "../LoginPopUp/LoginPopUp";
+import { getUserName } from "@/api/users";
+import Dropdown from "@/components/Dropdown/Dropdown";
 
 const NavBar = ({ links, signInMetadata }: NavBarProps) => {
   const currentPath = window.location.pathname;
   const cart = useCartStore((state) => state);
+  const { isAuthenticated, authRequireAPIFetch, logout } = useAuth();
+
+  const [userFullName, setUserFullName] = useState<string>("User");
+
+  const handleLogout = async () => {
+    await logout();
+  };
+
+  const dropdownEles: DropdownProps = {
+    trigger: (
+      <span className="flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer">
+        {userFullName}
+      </span>
+    ),
+    menu: [
+      <button
+        key="logout-action"
+        onClick={handleLogout}
+        className="block rounded w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-300 "
+        role="menuitem"
+      >
+        Logout
+      </button>,
+    ],
+  };
 
   const getLinkClass = (href: string) => {
     const base =
       "text-gray-700 text-xs px-3 py-1 rounded-md hover:text-blue-500 hover:bg-gray-200 transition duration-150 ease-in-out";
-    const active = "underline decoration-blue-500 font-semibold";
-    console.log(currentPath === href);
+    const active = "underline decoration-blue-50 font-semibold";
     return currentPath === href ? `${base} ${active}` : `${base}`;
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      const fetchUserName = async () => {
+        try {
+          const fullName = await getUserName(authRequireAPIFetch);
+          setUserFullName(fullName);
+        } catch (error) {
+          console.error("Failed to fetch user name:", error);
+          setUserFullName("User");
+        }
+      };
+
+      fetchUserName();
+    }
+  }, [isAuthenticated, authRequireAPIFetch]);
 
   return (
     <nav className="fixed z-50 flex top-0 left-0 bg-gray-300 w-full justify-between items-center px-2 py-2 shadow-md">
@@ -20,29 +65,32 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
         <img
           src="https://placehold.co/32x32"
           alt="Bookworm Logo"
-          className="h-8 w-8 rounded-2xl"
+          className="h-8 w-8 rounded-xl"
         />
-        <h2 className="text-base font-bold">BOOKWORM</h2>
+        <h1 className="text-base font-bold">BOOKWORM</h1>
       </div>
 
-      <ul className="links flex space-x-6">
+      <ul className="links flex space-x-6 items-center ">
         {links.map((link) => (
-          <li key={link.ref} className={getLinkClass(link.ref)}>
-            <a href={link.ref}>{link.label}</a>
+          <li key={link.ref}>
+            <a href={link.ref} className={getLinkClass(link.ref)}>
+              {link.label}
+            </a>
           </li>
         ))}
 
-        <li key={cart.ref} className={getLinkClass(cart.ref)}>
-          <a href={cart.ref}>
+        <li key={cart.ref}>
+          <a href={cart.ref} className={getLinkClass(cart.ref)}>
             {cart.label} <span>({cart.countItem})</span>
           </a>
         </li>
 
-        <li
-          key={signInMetadata.ref}
-          className={getLinkClass(signInMetadata.ref)}
-        >
-          <a href={signInMetadata.ref}>{signInMetadata.label}</a>
+        <li key={signInMetadata.ref}>
+          {isAuthenticated ? (
+            <Dropdown trigger={dropdownEles.trigger} menu={dropdownEles.menu} />
+          ) : (
+            <LoginPopUp />
+          )}
         </li>
       </ul>
     </nav>

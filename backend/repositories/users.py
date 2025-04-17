@@ -36,10 +36,15 @@ def get_user_by_email(*, db_session: Session, email: str) -> User | None:
     session_user = db_session.exec(statement).first()
     return session_user
 
+def get_user_by_id(*, db_session: Session, user_id: int) -> User | None:
+    statement = select(User).where(User.id == user_id)
+    session_user = db_session.exec(statement).first()
+    return session_user
+
 def authenticate(*, db_session: Session, email: str, password: str) -> User | None:
     db_user = get_user_by_email(db_session=db_session, email=email)
     if not db_user:
         return None
-    if not verify_password(password, db_user.hashed_password):
+    if not verify_password(password, db_user.password):
         return None
     return db_user

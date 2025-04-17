@@ -10,12 +10,18 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 ALGORITHM = "HS256"
 
-def verify_token(token , secret_key: str) -> Any:
-    payload = jwt.decode(
-        token, secret_key, algorithms=[ALGORITHM]
-    )
-    return payload
+import jwt
+from datetime import datetime
 
+def verify_token(token: str, secret_key: str) -> dict:
+    try:
+        payload = jwt.decode(token, secret_key, algorithms=["HS256"])
+        if payload.get("exp") and payload["exp"] < int(datetime.now(timezone.utc).timestamp()):
+            raise jwt.ExpiredSignatureError("Token expired")
+        return payload
+    except jwt.InvalidTokenError:
+        raise Exception("Invalid token")
+    
 def create_jwt_token(subject: str | Any, expires_delta: timedelta, secret_key: str) -> str:
     expire = datetime.now(timezone.utc) + expires_delta
     to_encode = {"exp": expire, "sub": str(subject)}
