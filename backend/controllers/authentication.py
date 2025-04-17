@@ -77,7 +77,6 @@ def login(
             secure=settings.COOKIES_HTTPS_ONLY,
             samesite=settings.COOKIES_SAMESITE_POLICY,
             max_age=int(refresh_token_expires.total_seconds()),
-            path="/refresh",
         )
         return Token(access_token=access_token, refresh_token=None)
     return Token(access_token=access_token, refresh_token=refresh_token)
@@ -96,7 +95,7 @@ def refresh_token(
         refresh_token = request.cookies.get(settings.REFRESH_TOKEN_KEY)
     elif body:
         refresh_token = body.refresh_token
-
+    
     if not refresh_token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -150,7 +149,6 @@ def refresh_token(
             secure=settings.COOKIES_HTTPS_ONLY,
             samesite=settings.COOKIES_SAMESITE_POLICY,
             max_age=int(refresh_token_expires.total_seconds()),
-            path="/refresh",
         )
         return Token(access_token=access_token, refresh_token=None)
     return Token(access_token=access_token, refresh_token=new_refresh_token)
@@ -165,6 +163,6 @@ def logout(request: Request, response: Response):
             secure=settings.COOKIES_HTTPS_ONLY,
             samesite=settings.COOKIES_SAMESITE_POLICY,
             max_age=0,
-            path="/refresh",
+            path="/",
         )
     return {"message": SuccessMessages.success_logout}
