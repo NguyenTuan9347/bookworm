@@ -44,9 +44,9 @@ export async function fetchApi<T>(
     if (!response.ok) {
       console.error(
         `API request failed for ${options.method || "GET"} ${url}:`,
-        constVar.errorMessage.API_default
+        constVar.errorMessage.APIDefault
       );
-      throw Error(constVar.errorMessage.API_default);
+      throw Error(constVar.errorMessage.APIDefault);
     }
 
     if (response.status === 204) {

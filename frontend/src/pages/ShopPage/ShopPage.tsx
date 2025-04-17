@@ -142,12 +142,14 @@ const ShopPage = () => {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex min-h-screen flex-col">
         <div className="header border-b border-gray-200 py-4 mb-6">
-          <h1 className="text-2xl font-semibold text-gray-800">BOOKS</h1>
-          {activeFilters && (
-            <p className="text-sm text-gray-500 mt-1">
-              Active filters: {activeFilters}
-            </p>
-          )}
+          <h1 className="text-2xl font-semibold text-gray-800 align-center">
+            BOOKS{" "}
+            {activeFilters && (
+              <span className="text-xs text-gray-400 mt-1">
+                Filtered by: ({activeFilters})
+              </span>
+            )}
+          </h1>
         </div>
 
         <div className="content flex flex-col md:flex-row flex-grow gap-6 lg:gap-8">

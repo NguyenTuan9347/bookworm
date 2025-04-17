@@ -1,5 +1,6 @@
 import { BookProfileCardProps } from "../../shared/interfaces";
-
+import { useNavigate } from "react-router-dom";
+import { constVar } from "@/shared/constVar";
 const safeParseFloat = (value: string | number | undefined | null): number => {
   if (value === undefined || value === null) return 0;
   const parsed = parseFloat(String(value));
@@ -7,12 +8,21 @@ const safeParseFloat = (value: string | number | undefined | null): number => {
 };
 
 const BookProfileCard = ({ index, book }: BookProfileCardProps) => {
+  const navigate = useNavigate();
+
+  const handleOnClickCard = () => {
+    if (book.id) {
+      navigate(constVar.api_routes.books.detail.pathTemplate(book.id));
+    } else {
+      console.log("Something wrong should be book_id here");
+    }
+  };
   return (
     <div
-      className="flex flex-col rounded-2xl overflow-hidden border border-gray-200 shadow hover:shadow-lg transition-shadow bg-white"
+      className="flex flex-col rounded-2xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-lg hover:border-blue-400 hover:ring-2 hover:ring-blue-100 transition-all duration-200 bg-white cursor-pointer"
       key={index}
+      onClick={handleOnClickCard}
     >
-      {/* Responsive Image */}
       <div className="w-full aspect-[3/4] overflow-hidden bg-gray-100">
         <img
           src={book.book_cover_photo || ""}
@@ -21,7 +31,6 @@ const BookProfileCard = ({ index, book }: BookProfileCardProps) => {
         />
       </div>
 
-      {/* Title & Author */}
       <div className="p-3 border-b border-gray-200">
         <div className="text-base font-semibold line-clamp-2">
           {book.book_title}
@@ -29,7 +38,6 @@ const BookProfileCard = ({ index, book }: BookProfileCardProps) => {
         <div className="text-xs text-gray-500 mt-1">{book.author_name}</div>
       </div>
 
-      {/* Pricing */}
       <div className="p-3 mt-auto bg-gray-50">
         {book.discount_price ? (
           <>

@@ -14,6 +14,7 @@ export const constVar = {
     { label: "About", ref: "/about" },
   ],
   api_keys: {
+    book_detail: "book_by_id",
     filtered_and_sorted_books: "filtered_and_sort_books",
     featured_books: "featured_books",
     recommended_books: "recommended_books",
@@ -23,7 +24,8 @@ export const constVar = {
     reviews_range: "reviews_range",
   },
   errorMessage: {
-    API_default: "Something gone wrong when called API",
+    missingBookID: "Book ID is required to fetch book details.",
+    APIDefault: "Something gone wrong when called API",
   },
   api_routes: {
     base: "/api",
@@ -36,7 +38,7 @@ export const constVar = {
           "page?, page_size?, sort_by? (default|popularity|price_asc|price_desc), category?, author?, min_rating?",
       },
       detail: {
-        pathTemplate: "/book/:book_id",
+        pathTemplate: (book_id: string) => `/book/${book_id}`,
         method: "GET",
         paramsHint: ":book_id (path parameter, required)",
       },

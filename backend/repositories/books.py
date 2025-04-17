@@ -5,8 +5,8 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import label
 from models import Book, Discount, Category, Author, Review
 from models.paging_info import PaginatedResponse, PagingInfo
-from models.books import SortByOptions, AllowedPageSize, BookRead, FeaturedSortOptions
-
+from models.books import SortByOptions, AllowedPageSize, BookRead, FeaturedSortOptions, BookReadWithDetails
+from models.reviews import ReviewRead
 
 def construct_base_book_query() -> Tuple[Any, str, str, str, str]:
     current_date = date.today()
@@ -122,7 +122,7 @@ def get_books(
         result_query = result_query.order_by(desc(effective_price_label))
 
     result_query = result_query.offset((page - 1) * page_size).limit(page_size)
-    labels = [effective_price_label, effective_price_label, dicount_amount_label, review_count_label, average_rating_label]
+    labels = [effective_price_label, dicount_amount_label, review_count_label, average_rating_label]
     items = []
     try:
         results = session.exec(result_query.options(selectinload(Book.author))).all()
@@ -154,15 +154,33 @@ def get_books(
     return PaginatedResponse(data=items, paging=paging_info)
 
 
-def get_book_by_id(session: Session, book_id: int) -> Optional[Book]:
+def get_book_by_id(session: Session, book_id: int) -> Optional[BookReadWithDetails]:
     try:
-        book = session.get(Book, book_id)
-        return book
-    except Exception as e:
-        print(f"Database query failed: {e}")
-        return None
-    
+        base_query, effective_price_label, dicount_amount_label = construct_base_book_query()
 
+        query = base_query.where(Book.id == book_id).options(selectinload(Book.author),selectinload(Book.category))
+        
+
+        result = session.exec(query).first()
+        if not result:
+            return None        
+        book: Book = result[0]
+
+        book_data = book.model_dump()
+                
+        book_data.update({
+            effective_price_label: getattr(result, effective_price_label),
+            "category_name": getattr(book.category, "category_name", None),
+            "author_name": getattr(book.author, "author_name", None),
+        })
+
+        book_data["reviews"] = [ReviewRead(**review.model_dump()) for review in book.reviews]
+
+        return BookReadWithDetails(**book_data)
+
+    except Exception as e:
+        print(f"Failed to get book by ID {book_id}: {e}")
+        return None
 
 
 def get_top_k_discounted_books(session: Session, k: int = 10) -> List[BookRead]:

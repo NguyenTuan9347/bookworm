@@ -51,7 +51,5 @@ class BookRead(BookBase):
   discount_price: Optional[Decimal] = Field(sa_column=Column(Numeric(5, 2)))
 
 class BookReadWithDetails(BookRead):
-  category: "CategoryRead"
-  author: "AuthorRead"
-  reviews: List["ReviewRead"] = Relationship(back_populates="book")
+  category_name: Optional[str]
 

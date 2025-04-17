@@ -32,7 +32,7 @@ const LoginPopUp: React.FC = () => {
         setError("Invalid email or password");
       }
     } catch {
-      setError(constVar.errorMessage.API_default || "Failed to sign in");
+      setError(constVar.errorMessage.APIDefault || "Failed to sign in");
     }
   };
 

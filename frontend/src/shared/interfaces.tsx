@@ -35,14 +35,15 @@ export interface NavBarProps {
   signInMetadata: Link;
 }
 
-export interface BookProfileProp {
+export interface BookProfileCardProp {
+  id: string;
   book_title: string;
   book_cover_photo?: string;
   author_name?: string;
   book_price: number;
 }
 
-export interface DiscountedBookProfileCardProp extends BookProfileProp {
+export interface DiscountedBookProfileCardProp extends BookProfileCardProp {
   discount_price: number;
 }
 
@@ -53,6 +54,17 @@ export interface CarouselDiscountedBookProps {
 export interface BookProfileCardProps {
   book: DiscountedBookProfileCardProp;
   index: number;
+}
+
+export interface BookProfile {
+  book_title: string;
+  book_summary: string;
+  book_price: string;
+  book_cover_photo: string;
+  id: number;
+  author_name: string;
+  discount_price: string;
+  category_name: string;
 }
 
 export interface BookGridProps {
@@ -90,6 +102,9 @@ export interface ApiError {
   message?: string;
 }
 
+export interface BookParams {
+  id?: string;
+}
 export interface ListBooksParams {
   page?: number;
   page_size?: AllowedPageSize;
