@@ -37,7 +37,6 @@ def get_current_user_through_header(db_session: SessionDep, token: TokenDep) -> 
     
     try:
         payload = verify_token(token, secret_key=settings.ACCESS_SECRET_KEY)
-        print(payload)
         token_data = TokenPayload(**payload)
     except (InvalidTokenError, ValidationError):
         raise HTTPException(

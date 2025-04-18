@@ -24,6 +24,8 @@ export const constVar = {
     reviews_range: "reviews_range",
   },
   errorMessage: {
+    login_only: "Cannot perform this action without a valid user ID.",
+    invalid_item: "Invalid item provided to addItem",
     missingBookID: "Book ID is required to fetch book details.",
     APIDefault: "Something gone wrong when called API",
   },
@@ -71,7 +73,12 @@ export const constVar = {
       },
     },
     cart: {
-      get: { path: "/cart", method: "GET", paramsHint: "Requires auth" },
+      get: {
+        path: "/cart",
+        method: "GET",
+        paramsHint: "Requires auth",
+        label: "Cart",
+      },
       add: {
         path: "/cart/item",
         method: "POST",

@@ -22,6 +22,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [uid, setUid] = useState<string | null | number>(null);
+
   const setAuthState = useCallback(
     (token: string | null, authenticated: boolean, loading: boolean) => {
       setAccessToken(token);
@@ -69,9 +71,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     try {
       const decoded: DecodedToken = jwtDecode(token);
-      const expiry = decoded.exp * 1000;
+      const expiry = decoded["exp"] * 1000;
       const now = Date.now();
       const refreshTime = expiry - now - 10_000;
+      if (decoded["sub"]) {
+        setUid(decoded["sub"]);
+      }
       if (refreshTime > 0) {
         proactiveRefreshTimeout = setTimeout(refreshAccessToken, refreshTime);
       }
@@ -193,6 +198,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     login,
     logout,
     authRequireAPIFetch,
+    uid,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

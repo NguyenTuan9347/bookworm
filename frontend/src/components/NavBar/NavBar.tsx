@@ -1,18 +1,21 @@
 import { useEffect, useState } from "react";
 import { DropdownProps, NavBarProps } from "../../shared/interfaces";
-import { useCartStore } from "../../states/Cart/useCart";
+import { useCart } from "@/context/CartContext/cartContext";
 import "./NavBar.css";
 import { useAuth } from "@/context/Authentication/authContext";
 import LoginPopUp from "../LoginPopUp/LoginPopUp";
+import { constVar } from "@/shared/constVar";
 import { getUserName } from "@/api/users";
 import Dropdown from "@/components/Dropdown/Dropdown";
 
 const NavBar = ({ links, signInMetadata }: NavBarProps) => {
   const currentPath = window.location.pathname;
-  const cart = useCartStore((state) => state);
-  const { isAuthenticated, authRequireAPIFetch, logout } = useAuth();
+  const { isAuthenticated, authRequireAPIFetch, logout, uid } = useAuth();
+  const useCartStore = useCart();
+  const items = useCartStore((state) => state.items);
+  console.log(`Render ${items.length}`);
 
-  const [userFullName, setUserFullName] = useState<string>("User");
+  const [userFullName, setUserFullName] = useState<string | null>(null);
 
   const handleLogout = async () => {
     await logout();
@@ -28,7 +31,7 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
       <button
         key="logout-action"
         onClick={handleLogout}
-        className="block rounded w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-300 "
+        className="block rounded w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-300"
         role="menuitem"
       >
         Logout
@@ -40,7 +43,10 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
     const base =
       "text-gray-700 text-xs px-3 py-1 rounded-md hover:text-blue-500 hover:bg-gray-200 transition duration-150 ease-in-out";
     const active = "underline decoration-blue-50 font-semibold";
-    return currentPath === href ? `${base} ${active}` : `${base}`;
+    const disabled = !uid ? "opacity-50 cursor-not-allowed" : "";
+    return currentPath === href
+      ? `${base} ${active} ${disabled}`
+      : `${base} ${disabled}`;
   };
 
   useEffect(() => {
@@ -57,7 +63,7 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
 
       fetchUserName();
     }
-  }, [isAuthenticated, authRequireAPIFetch]);
+  }, [isAuthenticated, authRequireAPIFetch, items]);
 
   return (
     <nav className="fixed z-50 flex top-0 left-0 bg-gray-300 w-full justify-between items-center px-2 py-2 shadow-md">
@@ -70,7 +76,7 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
         <h1 className="text-base font-bold">BOOKWORM</h1>
       </div>
 
-      <ul className="links flex space-x-6 items-center ">
+      <ul className="links flex space-x-6 items-center">
         {links.map((link) => (
           <li key={link.ref}>
             <a href={link.ref} className={getLinkClass(link.ref)}>
@@ -79,9 +85,12 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
           </li>
         ))}
 
-        <li key={cart.ref}>
-          <a href={cart.ref} className={getLinkClass(cart.ref)}>
-            {cart.label} <span>({cart.countItem})</span>
+        <li key={constVar.api_routes.cart.get.path}>
+          <a
+            href={constVar.api_routes.cart.get.path}
+            className={getLinkClass(constVar.api_routes.cart.get.path)}
+          >
+            {constVar.api_routes.cart.get.label} <span>({items.length})</span>
           </a>
         </li>
 

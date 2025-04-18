@@ -18,11 +18,6 @@ export interface ListMostDiscountedBooksParams {
   top_k?: number;
 }
 
-export interface CartState extends Link {
-  countItem: number;
-  setCount: (newCount: number) => void;
-}
-
 export interface AdditionalInfo {
   companyName?: string;
   applicationName: string;
@@ -47,6 +42,22 @@ export interface DiscountedBookProfileCardProp extends BookProfileCardProp {
   discount_price: number;
 }
 
+export interface BookCartProps extends DiscountedBookProfileCardProp {
+  quantity: number;
+}
+
+export interface CartState {
+  items: BookCartProps[];
+  addItem: (item: BookCartProps) => void;
+  removeItem: (productId: string) => void;
+  clearCart: () => void;
+}
+
+export interface PersistedCartState {
+  items: BookCartProps[];
+  countItem: number;
+}
+
 export interface CarouselDiscountedBookProps {
   books?: DiscountedBookProfileCardProp[];
 }
@@ -56,14 +67,8 @@ export interface BookProfileCardProps {
   index: number;
 }
 
-export interface BookProfile {
-  book_title: string;
+export interface BookProfile extends DiscountedBookProfileCardProp {
   book_summary: string;
-  book_price: string;
-  book_cover_photo: string;
-  id: number;
-  author_name: string;
-  discount_price: string;
   category_name: string;
 }
 
@@ -165,6 +170,8 @@ export interface AuthContextValue {
   accessToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  useCartStore?: CartState | null;
+  uid?: string | null | number;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   authRequireAPIFetch: AuthRequireAPIFetch;
