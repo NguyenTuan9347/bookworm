@@ -10,8 +10,8 @@ const BookPage = () => {
   const { id } = useParams();
 
   const useCartStore = useCart();
-  const addItem = useCartStore((state) => state.addItem);
-  const items = useCartStore((state) => state.items);
+  const addBook = useCartStore((state) => state.addBook);
+  const books = useCartStore((state) => state.books);
 
   const [quantity, setQuantity] = useState(1);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -35,14 +35,14 @@ const BookPage = () => {
 
     const currentBookId = book.id.toString();
 
-    const bookId = items.find((item) => item.id === currentBookId);
+    const bookId = books.find((item) => item.id === currentBookId);
     let currentBookSize = 0;
     if (bookId) {
       currentBookSize = bookId.quantity;
     }
 
     const quantityToSet = quantity + currentBookSize;
-    const totalQuantityCurrentlyInCart = items.length;
+    const totalQuantityCurrentlyInCart = books.length;
 
     const potentialNewTotalQuantity =
       totalQuantityCurrentlyInCart - quantityToSet;
@@ -53,7 +53,7 @@ const BookPage = () => {
       return;
     }
 
-    addItem({
+    addBook({
       ...book,
       book_price: Number(book.book_price),
       discount_price: Number(book.discount_price),
@@ -153,7 +153,7 @@ const BookPage = () => {
         <div className="w-full lg:w-80">
           <div className="sticky top-4 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
             <div className="mb-4 rounded-md bg-gray-50 p-4">
-              <div className="flex items-baseline gap-2">
+              <div className="flex books-baseline gap-2">
                 {book.discount_price !== book.book_price && (
                   <span className="text-lg text-gray-500 line-through">
                     ${book.book_price}
@@ -199,7 +199,7 @@ const BookPage = () => {
             )}
             {showFailure && (
               <p className="mt-3 text-center text-sm font-medium text-red-600">
-                Failed: Number of books within an order cannot exceed 8 items!
+                Failed: Number of books within an order cannot exceed 8 books!
               </p>
             )}
             {!showSuccess && !showFailure && <div className="mt-3 h-5"></div>}

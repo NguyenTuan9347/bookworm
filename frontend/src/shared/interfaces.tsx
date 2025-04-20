@@ -47,9 +47,10 @@ export interface BookCartProps extends DiscountedBookProfileCardProp {
 }
 
 export interface CartState {
-  items: BookCartProps[];
-  addItem: (item: BookCartProps) => void;
-  removeItem: (productId: string) => void;
+  books: BookCartProps[];
+  addBook: (book: BookCartProps) => void;
+  replaceBook: (book: BookCartProps) => void;
+  removeBook: (bookId: string) => void;
   clearCart: () => void;
 }
 

@@ -12,8 +12,8 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
   const currentPath = window.location.pathname;
   const { isAuthenticated, authRequireAPIFetch, logout, uid } = useAuth();
   const useCartStore = useCart();
-  const items = useCartStore((state) => state.items);
-  console.log(`Render ${items.length}`);
+  const books = useCartStore((state) => state.books);
+  console.log(`Render ${books.length}`);
 
   const [userFullName, setUserFullName] = useState<string | null>(null);
 
@@ -23,7 +23,7 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
 
   const dropdownEles: DropdownProps = {
     trigger: (
-      <span className="flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer">
+      <span className="flex books-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-200 cursor-pointer">
         {userFullName}
       </span>
     ),
@@ -63,11 +63,11 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
 
       fetchUserName();
     }
-  }, [isAuthenticated, authRequireAPIFetch, items]);
+  }, [isAuthenticated, authRequireAPIFetch, books]);
 
   return (
-    <nav className="fixed z-50 flex top-0 left-0 bg-gray-300 w-full justify-between items-center px-2 py-2 shadow-md">
-      <div className="home flex items-center space-x-3">
+    <nav className="fixed z-50 flex top-0 left-0 bg-gray-300 w-full justify-between books-center px-2 py-2 shadow-md">
+      <div className="home flex books-center space-x-3">
         <img
           src="https://placehold.co/32x32"
           alt="Bookworm Logo"
@@ -76,7 +76,7 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
         <h1 className="text-base font-bold">BOOKWORM</h1>
       </div>
 
-      <ul className="links flex space-x-6 items-center">
+      <ul className="links flex space-x-6 books-center">
         {links.map((link) => (
           <li key={link.ref}>
             <a href={link.ref} className={getLinkClass(link.ref)}>
@@ -90,7 +90,7 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
             href={constVar.api_routes.cart.get.path}
             className={getLinkClass(constVar.api_routes.cart.get.path)}
           >
-            {constVar.api_routes.cart.get.label} <span>({items.length})</span>
+            {constVar.api_routes.cart.get.label} <span>({books.length})</span>
           </a>
         </li>
 

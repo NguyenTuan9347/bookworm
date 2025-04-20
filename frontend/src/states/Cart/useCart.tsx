@@ -3,7 +3,7 @@ import { persist, PersistStorage, StorageValue } from "zustand/middleware";
 import { CartState, BookCartProps } from "@/shared/interfaces";
 
 type PersistedCartState = {
-  items: BookCartProps[];
+  books: BookCartProps[];
 };
 
 export const createCartStore = (uid: string | number | null | undefined) => {
@@ -37,58 +37,60 @@ export const createCartStore = (uid: string | number | null | undefined) => {
   return create<CartState>()(
     persist(
       (set, get) => ({
-        items: [],
-        addItem: (newItem: BookCartProps) => {
-          if (!newItem.id || !newItem.quantity || !newItem.discount_price) {
-            console.error("Invalid item provided to addItem");
+        books: [],
+
+        addBook: (newBook: BookCartProps) => {
+          if (!newBook.id || !newBook.quantity || !newBook.discount_price) {
+            console.error("Invalid book provided to addBook");
             return;
           }
 
-          const cartItems = get().items;
-          const existingItem = cartItems.find((item) => item.id === newItem.id);
+          const cartBooks = get().books;
+          const existingBook = cartBooks.find((book) => book.id === newBook.id);
 
-          let updatedItems: BookCartProps[];
-          if (existingItem) {
-            updatedItems = cartItems.map((item) =>
-              item.id === newItem.id
-                ? { ...item, quantity: item.quantity + newItem.quantity }
-                : item
+          let updatedBooks: BookCartProps[];
+          if (existingBook) {
+            updatedBooks = cartBooks.map((book) =>
+              book.id === newBook.id
+                ? { ...book, quantity: book.quantity + newBook.quantity }
+                : book
             );
           } else {
-            updatedItems = [...cartItems, newItem];
+            updatedBooks = [...cartBooks, newBook];
           }
-          set({ items: updatedItems });
 
-          console.log("State after set:", get().items);
+          set({ books: updatedBooks });
         },
 
-        removeItem: (bookIdToRemove: string) => {
-          const cartItems = get().items;
-          const itemToRemove = cartItems.find(
-            (item) => item.id === bookIdToRemove
+        replaceBook: (updatedBook: BookCartProps) => {
+          const cartBooks = get().books;
+          const bookExists = cartBooks.some(
+            (book) => book.id === updatedBook.id
           );
-          if (!itemToRemove) return;
 
-          const updatedItems = cartItems.filter(
-            (item) => item.id !== bookIdToRemove
-          );
-          set({ items: updatedItems });
+          const updatedBooks = bookExists
+            ? cartBooks.map((book) =>
+                book.id === updatedBook.id ? updatedBook : book
+              )
+            : [...cartBooks, updatedBook];
+
+          set({ books: updatedBooks });
         },
 
-        clearCart: () => set({ items: [] }),
-
-        getTotalPrice: (): number => {
-          return get().items.reduce(
-            (total, item) => total + item.discount_price * item.quantity,
-            0
+        removeBook: (bookIdToRemove: string) => {
+          const updatedBooks = get().books.filter(
+            (book) => book.id !== bookIdToRemove
           );
+          set({ books: updatedBooks });
         },
+
+        clearCart: () => set({ books: [] }),
       }),
       {
         name: "user-cart",
         storage: userScopedStorage,
         partialize: (state: CartState): PersistedCartState => ({
-          items: state.items,
+          books: state.books,
         }),
       }
     )
