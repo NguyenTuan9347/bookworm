@@ -52,7 +52,10 @@ export const createCartStore = (uid: string | number | null | undefined) => {
           if (existingBook) {
             updatedBooks = cartBooks.map((book) =>
               book.id === newBook.id
-                ? { ...book, quantity: book.quantity + newBook.quantity }
+                ? {
+                    ...book,
+                    quantity: Math.max(book.quantity + newBook.quantity, 8),
+                  }
                 : book
             );
           } else {

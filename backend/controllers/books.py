@@ -2,13 +2,13 @@
 import math
 from typing import List, Optional
 
-from fastapi import APIRouter, Query, Path, HTTPException
+from fastapi import APIRouter, Query, Path, HTTPException, status
 from models.books import BookRead, BookReadWithDetails, AllowedPageSize, SortByOptions, FeaturedSortOptions
 from models.paging_info import PaginatedResponse
 from controllers.deps import SessionDep
 from repositories.books import get_books, get_book_by_id, get_top_k_discounted_books, get_top_k_featured
 
-router = APIRouter(tags=["book"])
+router = APIRouter(tags=["Books"])
 
 @router.get(
     "/book/{book_id}",
@@ -20,12 +20,12 @@ def get_book(
     book_id: int = Path(..., title="The ID of the book to get", ge=1)
 ):
     if session is None: 
-        raise HTTPException(status_code=500, detail="Database session not available")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database session not available")
 
     db_book = get_book_by_id(session=session, book_id=book_id)
 
     if db_book is None:
-        raise HTTPException(status_code=404, detail="Book not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
 
     return db_book
 
@@ -45,7 +45,7 @@ def list_books(
     min_rating: Optional[int] = Query(None, title="Minimum average rating", ge=1, le=5),
 ):
     if session is None: 
-        raise HTTPException(status_code=500, detail="Database session not available")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database session not available")
 
     page_content = get_books(
         session=session,
@@ -90,7 +90,7 @@ def list_featured_books(
     top_k: int = Query(8, title="Number of books to return", ge=1) 
 ):
     if session is None:
-        raise HTTPException(status_code=500, detail="Database session not available")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database session not available")
 
     books = get_top_k_featured(session=session, sort_by=sort_by, k=top_k)
     return books

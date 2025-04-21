@@ -29,13 +29,13 @@ class Order(OrderBase, table=True):
   items: List["OrderItem"] = Relationship(back_populates="order") 
   
 class OrderCreate(OrderBase):
-  pass
+  items: List["OrderItem"]
 
 class OrderRead(OrderBase):
   id: int
 
 class OrderReadWithDetails(OrderRead):
-  items: List["OrderItemRead"] = [] 
+  items: List["OrderItemCreate"] = [] 
 
 
 
@@ -43,7 +43,7 @@ class OrderItemBase(SQLModel):
   order_id: int = Field(foreign_key="order.id", index=True)
   book_id: int = Field(foreign_key="book.id", index=True)
   quantity: int
-  book_price: Decimal = Field(sa_column=Column(Numeric(5, 2)))
+  price: Decimal = Field(sa_column=Column(Numeric(5, 2)))
 
 class OrderItem(OrderItemBase, table=True):
   __tablename__ = "order_item"

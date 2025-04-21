@@ -8,7 +8,7 @@ from repositories.utilities import get_unique_values
 from shared import const_var 
 from models.reviews import Review
 
-router = APIRouter(prefix="/reviews", tags=["reviews"])
+router = APIRouter(prefix="/reviews", tags=["Reviews"])
 
 @router.get("/range", response_model = ListPayload)
 def get_start_range(session: SessionDep) -> Any:

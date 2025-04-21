@@ -8,7 +8,7 @@ from repositories.utilities import get_unique_values
 from shared import const_var 
 from models.categories import Category
 
-router = APIRouter(prefix="/categories", tags=["categories"])
+router = APIRouter(prefix="/categories", tags=["Categories"])
 
 @router.get("/range", response_model = ListPayload)
 def get_categories_range(session: SessionDep) -> Any:

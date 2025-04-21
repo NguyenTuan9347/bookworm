@@ -1,8 +1,7 @@
 from datetime import timedelta
 from typing import Optional
 from fastapi import APIRouter, Request, Response, HTTPException, status
-from pydantic import BaseModel
-
+from models.authentication import RefreshTokenRequest, LoginRequest
 from repositories.users import authenticate, get_user_by_id
 from controllers.deps import SessionDep
 from core import security
@@ -11,16 +10,6 @@ from models.tokens import Token
 from shared.const_var import ErrorMessages, SuccessMessages
 
 router = APIRouter(tags=["Authentication"])
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-class RefreshTokenRequest(BaseModel):
-    refresh_token: str
-
-class LogoutRequest(BaseModel):
-    refresh_token: Optional[str] = None
 
 def is_web_client(request: Request) -> bool:
     client_type = request.headers.get("X-Client-Type", "").lower()

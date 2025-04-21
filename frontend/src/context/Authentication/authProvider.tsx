@@ -18,11 +18,14 @@ function isApiError(error: unknown): error is { status: number } {
 
 let refreshPromise: Promise<string | null> | null = null;
 let proactiveRefreshTimeout: ReturnType<typeof setTimeout> | null = null;
+
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [uid, setUid] = useState<string | null | number>(null);
+
+  const [uid, setUid] = useState<string | number | null>(null);
+  const [prevUid, setPrevUid] = useState<string | number | null>(null);
 
   const setAuthState = useCallback(
     (token: string | null, authenticated: boolean, loading: boolean) => {
@@ -36,10 +39,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const handleAuthSuccess = useCallback(
     (res: JWTTokenResponse) => {
+      let decoded: DecodedToken | null = null;
+      try {
+        decoded = jwtDecode(res.access_token);
+      } catch (e) {
+        console.warn("Failed to decode token on auth success:", e);
+      }
+
+      if (decoded?.sub) {
+        setUid(decoded.sub);
+      }
+
       setAuthState(res.access_token, true, false);
     },
     [setAuthState]
   );
+
   const refreshAccessToken = useCallback(async (): Promise<string | null> => {
     if (refreshPromise) return refreshPromise;
 
@@ -65,6 +80,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     return refreshPromise;
   }, [handleAuthSuccess, setAuthState]);
+
   const scheduleProactiveRefresh = (token: string | null) => {
     if (proactiveRefreshTimeout) clearTimeout(proactiveRefreshTimeout);
     if (!token) return;
@@ -74,9 +90,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const expiry = decoded["exp"] * 1000;
       const now = Date.now();
       const refreshTime = expiry - now - 10_000;
+
       if (decoded["sub"]) {
         setUid(decoded["sub"]);
       }
+
       if (refreshTime > 0) {
         proactiveRefreshTimeout = setTimeout(refreshAccessToken, refreshTime);
       }
@@ -104,14 +122,24 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         setAuthState(null, false, false);
       }
     };
+
     initializeAuth();
+
     return () => {
       if (proactiveRefreshTimeout) clearTimeout(proactiveRefreshTimeout);
     };
-  }, [handleAuthSuccess, setAuthState]); // This to make typescript happy
+  }, [handleAuthSuccess, setAuthState]);
+
+  useEffect(() => {
+    if (uid && prevUid === uid) {
+      setPrevUid(null);
+    }
+  }, [uid, prevUid]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
+    setPrevUid(uid);
+
     try {
       const response = await fetchApi<JWTTokenResponse>(
         constVar.api_routes.auth.login.path,
@@ -130,7 +158,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = async (): Promise<void> => {
+    const prev = uid;
+    setPrevUid(prev);
     setAuthState(null, false, true);
+
     try {
       await fetchApi(constVar.api_routes.auth.logout.path, {
         method: constVar.api_routes.auth.logout.method,
@@ -139,6 +170,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     } catch (error) {
       console.error("Backend logout failed:", error);
     } finally {
+      setUid(null);
       setIsLoading(false);
     }
   };
@@ -198,6 +230,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     login,
     logout,
     authRequireAPIFetch,
+    prevUid,
     uid,
   };
 

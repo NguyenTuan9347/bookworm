@@ -54,6 +54,14 @@ export interface CartState {
   clearCart: () => void;
 }
 
+export interface LoginPopUpProps {
+  triggerLabel?: string;
+  onSuccess: () => void;
+  onFailed: () => void;
+  open?: boolean;
+  onOpenChange?: (isOpen: boolean) => void;
+}
+
 export interface PersistedCartState {
   items: BookCartProps[];
   countItem: number;
@@ -173,6 +181,7 @@ export interface AuthContextValue {
   isLoading: boolean;
   useCartStore?: CartState | null;
   uid?: string | null | number;
+  prevUid?: string | null | number;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   authRequireAPIFetch: AuthRequireAPIFetch;

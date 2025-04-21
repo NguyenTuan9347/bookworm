@@ -24,8 +24,9 @@ export const constVar = {
     reviews_range: "reviews_range",
   },
   errorMessage: {
-    login_only: "Cannot perform this action without a valid user ID.",
-    invalid_item: "Invalid item provided to addItem",
+    loginOnly: "Cannot perform this action without a valid user ID.",
+    invalidItem: "Invalid item provided to addItem",
+    invalidEmailOrPass: "Invalid email or password was given",
     missingBookID: "Book ID is required to fetch book details.",
     APIDefault: "Something gone wrong when called API",
   },
