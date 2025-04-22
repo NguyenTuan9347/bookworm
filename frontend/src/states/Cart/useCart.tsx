@@ -86,7 +86,20 @@ export const createCartStore = (uid: string | number | null | undefined) => {
           );
           set({ books: updatedBooks });
         },
+        formatToOrder: (user_id: number) => {
+          const cartBooks = get().books;
 
+          const items = cartBooks.map((book) => ({
+            book_id: book.id,
+            quantity: book.quantity,
+            price: book.discount_price,
+          }));
+
+          return {
+            user_id: user_id,
+            items,
+          };
+        },
         clearCart: () => set({ books: [] }),
       }),
       {

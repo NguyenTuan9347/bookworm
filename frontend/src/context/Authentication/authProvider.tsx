@@ -24,8 +24,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const [uid, setUid] = useState<string | number | null>(null);
-  const [prevUid, setPrevUid] = useState<string | number | null>(null);
+  const [uid, setUid] = useState<number | null>(null);
+  const [prevUid, setPrevUid] = useState<number | null>(null);
 
   const setAuthState = useCallback(
     (token: string | null, authenticated: boolean, loading: boolean) => {
@@ -47,7 +47,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
 
       if (decoded?.sub) {
-        setUid(decoded.sub);
+        setUid(
+          typeof decoded.sub == "string" ? parseInt(decoded.sub) : decoded.sub
+        );
       }
 
       setAuthState(res.access_token, true, false);
@@ -90,11 +92,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const expiry = decoded["exp"] * 1000;
       const now = Date.now();
       const refreshTime = expiry - now - 10_000;
-
-      if (decoded["sub"]) {
-        setUid(decoded["sub"]);
-      }
-
       if (refreshTime > 0) {
         proactiveRefreshTimeout = setTimeout(refreshAccessToken, refreshTime);
       }

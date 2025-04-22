@@ -1,20 +1,38 @@
 import { useCart } from "@/context/CartContext/cartContext";
 import BookSheet from "@/components/BookSheet/BookSheet";
-import { useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import LoginPopUp from "@/components/LoginPopUp/LoginPopUp";
 import { useAuth } from "@/context/Authentication/authContext";
+import { createOrder } from "@/api/orders";
+import { AlertPopup } from "@/components/Alert/AlertPopup";
+import { useNavigate } from "react-router-dom";
+import { constVar } from "@/shared/constVar";
 
 const CartPage = () => {
   const useCartStore = useCart();
+  const navigate = useNavigate();
 
   const books = useCartStore((state) => state.books);
+  const formatToOrder = useCartStore((state) => state.formatToOrder);
   const removeBook = useCartStore((state) => state.removeBook);
   const replaceBook = useCartStore((state) => state.replaceBook);
   const clearCart = useCartStore((state) => state.clearCart);
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, authRequireAPIFetch, uid } = useAuth();
 
   const [isLoginDialogOpen, setIsLoginDialogOpen] = useState(false);
+  const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+
+  const successTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const errorTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (successTimerRef.current) clearTimeout(successTimerRef.current);
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    };
+  }, []);
 
   const totalPrice = useMemo(() => {
     return books.reduce(
@@ -28,30 +46,48 @@ const CartPage = () => {
   }, [books]);
 
   const placeActualOrder = () => {
-    console.log("User is authenticated. Placing order with:", books);
-    alert(
-      `Order Placed!\nItems: ${totalBooks}\nTotal: $${totalPrice.toFixed(2)}`
-    );
-    clearCart();
+    if (uid) {
+      createOrder(authRequireAPIFetch, formatToOrder(uid))
+        .then(() => {
+          setShowSuccessAlert(true);
+
+          successTimerRef.current = setTimeout(() => {
+            setShowSuccessAlert(false);
+            clearCart();
+            navigate(constVar.links[0].ref);
+          }, 10_000);
+        })
+        .catch((error) => {
+          console.error("Order failed:", error);
+          setShowErrorAlert(true);
+
+          if (error?.errors && Array.isArray(error.errors)) {
+            error.errors.forEach((err: { book_id: number }) => {
+              removeBook(err.book_id.toString());
+            });
+          }
+
+          errorTimerRef.current = setTimeout(() => {
+            setShowErrorAlert(false);
+          }, 3_000);
+        });
+    }
   };
 
   const handleCheckoutAttempt = () => {
     if (isAuthenticated) {
       placeActualOrder();
     } else {
-      console.log("User not authenticated. Opening login dialog.");
       setIsLoginDialogOpen(true);
     }
   };
 
   const handleLoginSuccess = () => {
-    console.log("Login successful from CartPage.");
     setIsLoginDialogOpen(false);
     placeActualOrder();
   };
 
   const handleLoginFailed = () => {
-    console.log("Login failed from CartPage.");
     alert("Login Failed. Please check your credentials.");
   };
 
@@ -85,15 +121,31 @@ const CartPage = () => {
               </p>
             </div>
             <button
-              className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition w-full max-w-xs disabled:opacity-50 disabled:cursor-not-allowed" // Added disabled styles
+              className="bg-blue-600 text-white px-6 py-3 rounded hover:bg-blue-700 transition w-full max-w-xs disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleCheckoutAttempt}
               disabled={books.length === 0}
             >
               Place Order
             </button>
           </div>
+
+          {showSuccessAlert && (
+            <AlertPopup
+              title="Success"
+              description="Order placed successfully!"
+            />
+          )}
+
+          {showErrorAlert && (
+            <AlertPopup
+              title="Error"
+              description="Failed to place order. Please try again."
+              className=""
+            />
+          )}
         </div>
       )}
+
       <LoginPopUp
         open={isLoginDialogOpen}
         onOpenChange={setIsLoginDialogOpen}

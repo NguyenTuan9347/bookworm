@@ -45,13 +45,40 @@ export interface DiscountedBookProfileCardProp extends BookProfileCardProp {
 export interface BookCartProps extends DiscountedBookProfileCardProp {
   quantity: number;
 }
+export interface OrderItemCreate {
+  book_id: string;
+  quantity: number;
+  price: number;
+}
+
+export interface OrderCreate {
+  user_id: number;
+  order_date?: string;
+  order_amount?: number;
+  items: OrderItemCreate[];
+}
+
+export interface AlertComponentProps {
+  title: string;
+  description: React.ReactNode;
+  variant?: "default" | "destructive";
+  className?: string;
+}
 
 export interface CartState {
   books: BookCartProps[];
   addBook: (book: BookCartProps) => void;
   replaceBook: (book: BookCartProps) => void;
   removeBook: (bookId: string) => void;
+  formatToOrder: (user_id: number) => OrderCreate;
   clearCart: () => void;
+}
+
+export interface ResponseFlag {
+  status_code: number;
+  content: {
+    message: string;
+  };
 }
 
 export interface LoginPopUpProps {
@@ -155,7 +182,7 @@ export interface JWTTokenResponse {
 }
 
 export interface DecodedToken {
-  sub: string | number | null;
+  sub: number | null;
   exp: number;
 }
 
@@ -180,8 +207,8 @@ export interface AuthContextValue {
   isAuthenticated: boolean;
   isLoading: boolean;
   useCartStore?: CartState | null;
-  uid?: string | null | number;
-  prevUid?: string | null | number;
+  uid: null | number;
+  prevUid: null | number;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   authRequireAPIFetch: AuthRequireAPIFetch;

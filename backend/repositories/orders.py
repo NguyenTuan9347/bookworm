@@ -9,10 +9,12 @@ def create_order(db_session: Session, order_create: OrderCreate) -> tuple[dict, 
         order_amount = sum(
             item.quantity * item.price for item in order_create.items
         )
+        
+        order_data = order_create.model_dump(exclude={"items"})
+        order = Order(**order_data)
+        order.order_amount=order_amount
 
-        order = Order.model_validate(order_create, update={"order_amount": order_amount})
-
-        with db_session.begin():
+        with db_session.begin_nested() :
             db_session.add(order)
             db_session.flush()
 
@@ -20,7 +22,7 @@ def create_order(db_session: Session, order_create: OrderCreate) -> tuple[dict, 
                 msg, status = create_order_item(db_session, item, order.id)
                 if status >= 400:
                     raise Exception(f"{item.book_id}:{msg}")
-
+        
         return {"message": SuccessMessages.order_success}, 200
 
     except Exception as e:
@@ -34,15 +36,11 @@ def create_order(db_session: Session, order_create: OrderCreate) -> tuple[dict, 
         return {"message": ErrorMessages.order_failed, "errors": [{"error": str(e)}]}, 500
 
 
-def create_order_item(session: Session, item: OrderItemCreate, order_id: int) -> tuple[str, int]:
+def create_order_item(session: Session, order_item_create: OrderItemCreate, order_id: int) -> tuple[str, int]:
     try:
-        order_item = OrderItem(
-            order_id=order_id,
-            book_id=item.book_id,
-            quantity=item.quantity,
-            book_price=item.price
-        )
+        order_item = OrderItem.model_validate(order_item_create, update={"order_id": order_id})
         session.add(order_item)
         return "Success", 200
     except Exception as e:
         return str(e), 400
+

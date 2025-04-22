@@ -1,6 +1,6 @@
 // src/services/filtersApi.ts
 import { constVar } from "@/shared/constVar";
-import { fetchApi } from "../api/core"; // Adjust path as needed
+import { fetchApi } from "../api/core";
 import { ListPayload } from "@/shared/interfaces";
 
 export function fetchCategoriesRange(): Promise<ListPayload<string>> {

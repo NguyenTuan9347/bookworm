@@ -25,6 +25,7 @@ export const constVar = {
   },
   errorMessage: {
     loginOnly: "Cannot perform this action without a valid user ID.",
+    failedOnCreateOrder: "On order creation there some thing gone wrong",
     invalidItem: "Invalid item provided to addItem",
     invalidEmailOrPass: "Invalid email or password was given",
     missingBookID: "Book ID is required to fetch book details.",
@@ -57,7 +58,12 @@ export const constVar = {
           "sort_by? (query: recommended|popular, default recommended), top_k? (query, default 8, e.g., ?sort_by=popular&top_k=5)",
       },
     },
-
+    order: {
+      create: {
+        path: "/order",
+        method: "POST",
+      },
+    },
     auth: {
       login: {
         path: "/login",
