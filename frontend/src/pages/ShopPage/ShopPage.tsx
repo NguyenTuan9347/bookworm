@@ -116,10 +116,32 @@ const ShopPage = () => {
       setCurrentPage(1);
     }
   };
+  const k = 1;
+  let start = Math.max(1, currentPage - k);
+  let end = Math.min(totalPages, currentPage + k);
+
+  if (currentPage - k < 1) {
+    end = Math.min(totalPages, end + (k - currentPage + 1));
+  }
+
+  if (currentPage + k > totalPages) {
+    start = Math.max(1, start - (currentPage + k - totalPages));
+  }
+
+  const pageRange: number[] = [];
+  for (let i = start; i <= end; i++) {
+    pageRange.push(i);
+  }
 
   const handlePrevPage = () => setCurrentPage((prev) => Math.max(1, prev - 1));
   const handleNextPage = () => {
     if (pagingInfo?.has_next) setCurrentPage((prev) => prev + 1);
+  };
+
+  const goToPage = (page: number) => {
+    if (page !== currentPage && page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   if (Object.values(filterQueries).some((q) => q.isLoading)) {
@@ -232,7 +254,7 @@ const ShopPage = () => {
                 ))}
             </div>
 
-            <div className="footer mt-8 flex justify-center items-center space-x-2">
+            <div className="footer mt-8 flex justify-center items-center space-x-1 flex-wrap text-sm">
               <button
                 onClick={handlePrevPage}
                 disabled={
@@ -240,19 +262,32 @@ const ShopPage = () => {
                   currentPage === 1 ||
                   !(pagingInfo?.has_prev ?? true)
                 }
-                className="px-3 py-1 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="px-2 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
               >
                 Prev
               </button>
-              <span className="text-sm text-gray-600">
-                Page {currentPage} of {totalPages}
-              </span>
+
+              {pageRange.map((page) => (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  className={`px-3 py-1 border rounded ${
+                    page === currentPage
+                      ? "bg-blue-500 text-white"
+                      : "hover:bg-gray-100"
+                  }`}
+                  disabled={booksQuery.isFetching}
+                >
+                  {page}
+                </button>
+              ))}
+
               <button
                 onClick={handleNextPage}
                 disabled={
                   booksQuery.isFetching || !(pagingInfo?.has_next ?? false)
                 }
-                className="px-3 py-1 border rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="px-2 py-1 border rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
               >
                 Next
               </button>
