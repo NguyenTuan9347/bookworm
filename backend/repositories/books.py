@@ -22,7 +22,7 @@ def construct_base_book_query() -> Tuple[Any, str, str, str, str]:
             and_(
                 Discount.discount_start_date <= current_date,
                 or_(
-                    Discount.discount_end_date == None,
+                    Discount.discount_end_date is None,
                     Discount.discount_end_date >= current_date
                 )
             )
@@ -181,16 +181,25 @@ def get_book_by_id(session: Session, book_id: int) -> Optional[BookReadWithDetai
     except Exception as e:
         print(f"Failed to get book by ID {book_id}: {e}")
         return None
-
-
+    
 def get_top_k_discounted_books(session: Session, k: int = 10) -> List[BookRead]:
-    result_query, effective_price_label, dicount_amount_label = construct_base_book_query()
-    
-    result_query = result_query.order_by(desc(dicount_amount_label))
-    
-    result_query = result_query.limit(k)
+    base_query, effective_price_label, discount_amount_label = construct_base_book_query()
 
-    labels = [effective_price_label, effective_price_label, dicount_amount_label]
+    calculations_subq = base_query.subquery("book_calculations")
+
+    result_query = (
+        select(
+            Book,
+            calculations_subq.c[effective_price_label],
+            calculations_subq.c[discount_amount_label]
+        )
+        .join(calculations_subq, Book.id == calculations_subq.c.id)
+        .where(calculations_subq.c[discount_amount_label] > 0)
+        .order_by(desc(calculations_subq.c[discount_amount_label]))
+        .limit(k)
+        .options(selectinload(Book.author))
+    )
+
     items = []
     try:
         results = session.exec(result_query).all()
@@ -198,16 +207,19 @@ def get_top_k_discounted_books(session: Session, k: int = 10) -> List[BookRead]:
             data = row._mapping
             book: Book = data["Book"]
             book_data = book.model_dump()
-            for label in labels:
+
+            for label in [effective_price_label, discount_amount_label]:
                 if label in data:
                     book_data[label] = data[label]
+
             book_data["author_name"] = book.author.author_name if book.author else None
             items.append(BookRead(**book_data))
-
     except Exception as e:
         print(f"Data query failed: {e}")
-    
+        items = []
+
     return items
+
 
 
 def get_top_k_featured(session: Session, sort_by: FeaturedSortOptions, k: int) -> List[BookRead]:
