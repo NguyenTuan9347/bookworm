@@ -1,11 +1,10 @@
-from fastapi import APIRouter, Query, HTTPException
+from fastapi import APIRouter, Query, HTTPException, status
 from typing import Any, Optional
-
 from models.books import AllowedPageSize
-from models.reviews import ReviewSortByOptions, AllowedReviewStar, ReviewMetadataResponse
+from models.reviews import ReviewSortByOptions, ReviewMetadataResponse, ReviewCreate
 from controllers.deps import SessionDep
 from models.response import ListPayload
-from repositories.reviews import get_reviews, get_review_metadata
+from repositories.reviews import get_reviews, get_review_metadata, create_review
 from repositories.utilities import get_unique_values
 from shared import const_var 
 from models.paging_info import PaginatedResponse
@@ -58,3 +57,21 @@ def get_star_range(session: SessionDep) -> Any:
     raise HTTPException(const_var.ErrorMessages.session_invalid)
 
   return ListPayload(data=get_unique_values(session, Review, "rating_start"), type="int")
+
+
+@router.post("/review", status_code=status.HTTP_201_CREATED)
+def create_single_review(
+  session: SessionDep,
+  review: ReviewCreate 
+) -> Any:
+  if not session:
+    raise HTTPException(const_var.ErrorMessages.session_invalid)
+
+  try:
+    create_review(db_session=session, review_create=review)
+    return {"message": const_var.SuccessMessages.success_create_order}
+  
+  except Exception as e:
+    import traceback
+    print(traceback.print_exc())
+    raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=const_var.ErrorMessages.failed_to_create_review)

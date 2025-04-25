@@ -28,26 +28,25 @@ const formatDate = (dateString: string | Date): string => {
   }
 };
 
-const ReviewList = ({ bookId }: ReviewListProps) => {
+const ReviewList = ({ bookId, motherClassName }: ReviewListProps) => {
   const [filterRating, setFilterRating] = useState<AllowedStarRating>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [pageSize, setPageSize] = useState<AllowedPageSize>(
-    allowedPageSizes[1] ?? 15 // Default to 15 or first allowed size
+    allowedPageSizes[1] ?? 15
   );
   const [sortBy, setSortBy] = useState<SortReviewBy>("newest");
-  const [numericBookId, setNumericBookId] = useState<number>(1); // Default value is 1
+  const [numericBookId, setNumericBookId] = useState<number>(1);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Parse bookId unconditionally
   useEffect(() => {
     let parsedBookId: number;
     if (!bookId) {
-      parsedBookId = 1; // set default value
+      parsedBookId = 1;
     } else {
       parsedBookId = typeof bookId === "string" ? parseInt(bookId, 10) : bookId;
       if (isNaN(parsedBookId)) {
         setErrorMsg("Error: Invalid Book ID format");
-        parsedBookId = 1; // set default value
+        parsedBookId = 1;
       } else {
         setErrorMsg(null);
       }
@@ -55,7 +54,6 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
     setNumericBookId(parsedBookId);
   }, [bookId]);
 
-  // Always define queries at the top level - never conditionally
   const metadataQuery = useQuery<ReviewMetadata, Error>({
     queryKey: [constVar.api_keys.review_metadata, numericBookId],
     queryFn: () => fetchReviewMetadata({ book_id: numericBookId }),
@@ -74,7 +72,7 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
   const reviewsQuery = useQuery<PaginatedResponse<ReviewCard>, Error>({
     queryKey: [constVar.api_keys.reviews_list, listReviewsParams],
     queryFn: () => fetchListReviews(listReviewsParams),
-    enabled: true, // Always run query, default value is provided
+    enabled: true,
     staleTime: 1000 * 30,
   });
 
@@ -152,7 +150,6 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
     setCurrentPage(1);
   };
 
-  // Render error message if needed
   if (errorMsg) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-5xl text-center text-red-600">
@@ -161,7 +158,6 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
     );
   }
 
-  // Render error if query fails
   if (isError) {
     return (
       <div className="container mx-auto py-8 px-4 max-w-5xl text-center text-red-600">
@@ -171,7 +167,7 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-5xl">
+    <div className={motherClassName}>
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-6 border-b pb-4">
           Customer Reviews

@@ -6,6 +6,7 @@ import { constVar } from "@/shared/constVar";
 import { useCart } from "@/context/CartContext/cartContext";
 import ReviewList from "@/components/ReviewList/ReviewList";
 import QuantityInput from "@/components/QuantityInput/QuantityInput";
+import ReviewForm from "@/components/ReviewForm/ReviewForm";
 
 const BookPage = () => {
   const { id } = useParams();
@@ -121,9 +122,9 @@ const BookPage = () => {
         <hr className="mt-2 border-gray-200" />
       </div>
 
-      <div className="flex flex-col gap-6 lg:flex-row">
-        <div className="flex-1 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col md:flex-row md:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[8fr_fr] gap-6">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col md:flex-row">
             <div className="md:w-2/5">
               <img
                 src={book.book_cover_photo}
@@ -151,65 +152,67 @@ const BookPage = () => {
           </div>
         </div>
 
-        <div className="w-full lg:w-80">
-          <div className="sticky top-4 rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-            <div className="mb-4 rounded-md bg-gray-50 p-4">
-              <div className="flex books-baseline gap-2">
-                {book.discount_price !== book.book_price && (
-                  <span className="text-lg text-gray-500 line-through">
-                    ${book.book_price}
-                  </span>
-                )}
-                <span className="text-2xl font-bold text-gray-800">
-                  ${book.discount_price}
+        <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm h-fit">
+          <div className="mb-4 rounded-md bg-gray-50 p-4">
+            <div className="flex books-baseline gap-2">
+              {book.discount_price !== book.book_price && (
+                <span className="text-lg text-gray-500 line-through">
+                  ${book.book_price}
                 </span>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="mb-1 block text-sm font-medium text-gray-700 text-left">
-                Quantity
-              </label>
-              <QuantityInput
-                min={1}
-                max={8}
-                value={quantity}
-                onChange={setQuantity}
-                onMaxReached={handleMaxReached}
-                onMinReached={handleMinReached}
-              />
-              {minMaxMessage && (
-                <p className="mt-1 text-center text-xs text-gray-500 h-4">
-                  {minMaxMessage}
-                </p>
               )}
-              {!minMaxMessage && <div className="mt-1 h-4"></div>}
+              <span className="text-2xl font-bold text-gray-800">
+                ${book.discount_price}
+              </span>
             </div>
-
-            <button
-              onClick={handleAddToCart}
-              className="w-full rounded-md bg-blue-600 py-2.5 text-white font-medium hover:bg-blue-700 transition"
-            >
-              Add to Cart
-            </button>
-
-            {showSuccess && (
-              <p className="mt-3 text-center text-sm font-medium text-green-600">
-                Added {quantity} {book.book_title} to cart!
-              </p>
-            )}
-            {showFailure && (
-              <p className="mt-3 text-center text-sm font-medium text-red-600">
-                Failed: Number of books within an order cannot exceed 8 books!
-              </p>
-            )}
-            {!showSuccess && !showFailure && <div className="mt-3 h-5"></div>}
           </div>
-        </div>
-      </div>
 
-      <div className="mt-8 flex flexr-row rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <ReviewList />
+          <div className="mb-4">
+            <label className="mb-1 block text-sm font-medium text-gray-700 text-left">
+              Quantity
+            </label>
+            <QuantityInput
+              min={1}
+              max={8}
+              value={quantity}
+              onChange={setQuantity}
+              onMaxReached={handleMaxReached}
+              onMinReached={handleMinReached}
+            />
+            {minMaxMessage && (
+              <p className="mt-1 text-center text-xs text-gray-500 h-4">
+                {minMaxMessage}
+              </p>
+            )}
+            {!minMaxMessage && <div className="mt-1 h-4"></div>}
+          </div>
+
+          <button
+            onClick={handleAddToCart}
+            className="w-full rounded-md bg-blue-600 py-2.5 text-white font-medium hover:bg-blue-700 transition"
+          >
+            Add to Cart
+          </button>
+
+          {showSuccess && (
+            <p className="mt-3 text-center text-sm font-medium text-green-600">
+              Added {quantity} {book.book_title} to cart!
+            </p>
+          )}
+          {showFailure && (
+            <p className="mt-3 text-center text-sm font-medium text-red-600">
+              Failed: Number of books within an order cannot exceed 8 books!
+            </p>
+          )}
+          {!showSuccess && !showFailure && <div className="mt-3 h-5"></div>}
+        </div>
+
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <ReviewList bookId={id} motherClassName="w-full" />
+        </div>
+
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <ReviewForm motherClassName="w-full" bookId={id} />
+        </div>
       </div>
     </div>
   );

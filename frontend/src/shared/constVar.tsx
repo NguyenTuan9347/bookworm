@@ -105,6 +105,10 @@ export const constVar = {
       },
     },
     reviews: {
+      create: {
+        path: "/review",
+        method: "POST",
+      },
       range: {
         path: "/reviews/range",
       },

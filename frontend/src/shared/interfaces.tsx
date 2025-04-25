@@ -187,6 +187,14 @@ export interface ListReviewsParams {
   filter_rating?: number;
 }
 
+export interface ReviewCreate {
+  book_id: number;
+  review_title: string;
+  review_details?: string;
+  rating_start: number;
+  review_date?: string;
+}
+
 export interface ListPayload<T = string | number> {
   data: T[];
   type: string;
@@ -271,4 +279,5 @@ export interface ReviewsResponse {
 
 export interface ReviewListProps {
   bookId?: string;
+  motherClassName?: string;
 }

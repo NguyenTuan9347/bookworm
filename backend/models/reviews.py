@@ -27,18 +27,17 @@ from typing import Dict
 class ReviewMetadataResponse(BaseModel):
   star_counts: Dict[int, int] 
   total_reviews: int
-  average_rating: int 
+  average_rating: float
   
 class ReviewBase(SQLModel):
   book_id: int = Field(foreign_key="book.id", index=True)
   review_title: str = Field(max_length=120)
   review_details: Optional[str] = Field(default=255)
   rating_start: int
-  review_date: datetime.datetime = Field(    
+  review_date: Optional[datetime.datetime] = Field(    
     sa_column=Column(
       DateTime(timezone=True),  
       server_default=func.now(),
-      nullable=False
     )
   )
 class Review(ReviewBase, table=True):
@@ -47,7 +46,7 @@ class Review(ReviewBase, table=True):
   book: "Book" = Relationship(back_populates="reviews")
 
 class ReviewCreate(ReviewBase):
-  pass
+  review_date: Optional[datetime.datetime] = None
 
 class ReviewRead(ReviewBase):
   id: int

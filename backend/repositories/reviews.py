@@ -7,7 +7,7 @@ from models.paging_info import PaginatedResponse
 from sqlmodel import Session, select, func, desc, asc
 from typing import Optional
 from models import Review
-from models.reviews import ReviewRead, ReviewSortByOptions
+from models.reviews import ReviewRead, ReviewSortByOptions, ReviewCreate, Review
 from models.paging_info import PaginatedResponse, PagingInfo
 from sqlmodel import select, func
 from sqlmodel import Session
@@ -105,3 +105,12 @@ def get_review_metadata(session: Session, book_id: int) -> ReviewMetadataRespons
     total_reviews=total_reviews,
     average_rating=avg_rating
   )
+
+
+def create_review(*, db_session: Session, review_create: ReviewCreate) -> Review:
+    print(review_create)    
+    db_obj = Review.model_validate(review_create)
+    db_session.add(db_obj)
+    db_session.commit()
+    db_session.refresh(db_obj)
+    return db_obj
