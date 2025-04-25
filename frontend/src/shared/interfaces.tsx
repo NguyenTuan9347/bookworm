@@ -4,6 +4,10 @@ export interface Link {
   label: string;
 }
 
+export interface ReviewMetadataParams {
+  book_id: number;
+}
+
 export interface User {
   first_name: string;
   last_name: string;
@@ -125,6 +129,15 @@ export type SortByOptions =
 
 export type FeaturedSortOptions = "recommended" | "popular";
 
+export interface ReviewCard {
+  id: number;
+  book_id: number;
+  review_title: string;
+  review_details: string;
+  rating_start: number;
+  review_date: string;
+}
+
 export interface PagingInfo {
   page: number;
   page_size: number;
@@ -133,6 +146,15 @@ export interface PagingInfo {
   has_next: boolean;
   has_prev: boolean;
 }
+
+export interface ReviewMetadata {
+  star_counts: {
+    [key: string]: number;
+  };
+  total_reviews: number;
+  average_rating: number;
+}
+
 export interface PaginatedResponse<T> {
   data: T[];
   paging: PagingInfo;
@@ -153,6 +175,16 @@ export interface ListBooksParams {
   category?: string;
   author?: string;
   min_rating?: number;
+}
+
+export type ReviewSortByOptions = "newest" | "oldest";
+
+export interface ListReviewsParams {
+  book_id: number;
+  page?: number;
+  page_size?: AllowedPageSize;
+  sort_by?: ReviewSortByOptions;
+  filter_rating?: number;
 }
 
 export interface ListPayload<T = string | number> {

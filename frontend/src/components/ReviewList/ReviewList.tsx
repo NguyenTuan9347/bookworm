@@ -1,53 +1,119 @@
-import { useState } from "react";
-import { allowedPageSizes } from "@/shared/constVar";
+import React, { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
-  PagingInfo,
   AllowedPageSize,
-  ReviewListProps,
-  Star,
-  AllowedStarRating,
   SortReviewBy,
+  AllowedStarRating,
+  ReviewListProps,
+  ListReviewsParams,
+  ReviewCard,
+  Star,
+  ReviewMetadata,
+  PaginatedResponse,
 } from "@/shared/interfaces";
+import { allowedPageSizes, constVar } from "@/shared/constVar";
+import { fetchListReviews, fetchReviewMetadata } from "@/api/reviews";
+
+const formatDate = (dateString: string | Date): string => {
+  if (!dateString) return "";
+  try {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "Invalid Date";
+  }
+};
 
 const ReviewList = ({ bookId }: ReviewListProps) => {
   const [filterRating, setFilterRating] = useState<AllowedStarRating>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<AllowedPageSize>(15);
+  const [pageSize, setPageSize] = useState<AllowedPageSize>(
+    allowedPageSizes[1] ?? 15 // Default to 15 or first allowed size
+  );
   const [sortBy, setSortBy] = useState<SortReviewBy>("newest");
+  const [numericBookId, setNumericBookId] = useState<number>(1); // Default value is 1
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const avgRating = 4.5;
-  const totalReviews = 42;
+  // Parse bookId unconditionally
+  useEffect(() => {
+    let parsedBookId: number;
+    if (!bookId) {
+      parsedBookId = 1; // set default value
+    } else {
+      parsedBookId = typeof bookId === "string" ? parseInt(bookId, 10) : bookId;
+      if (isNaN(parsedBookId)) {
+        setErrorMsg("Error: Invalid Book ID format");
+        parsedBookId = 1; // set default value
+      } else {
+        setErrorMsg(null);
+      }
+    }
+    setNumericBookId(parsedBookId);
+  }, [bookId]);
 
-  const stars: Star[] = [
-    { id: 5, content: "5 Star", totalReviews: 25 },
-    { id: 4, content: "4 Star", totalReviews: 10 },
-    { id: 3, content: "3 Star", totalReviews: 5 },
-    { id: 2, content: "2 Star", totalReviews: 2 },
-    { id: 1, content: "1 Star", totalReviews: 0 },
-  ];
+  // Always define queries at the top level - never conditionally
+  const metadataQuery = useQuery<ReviewMetadata, Error>({
+    queryKey: [constVar.api_keys.review_metadata, numericBookId],
+    queryFn: () => fetchReviewMetadata({ book_id: numericBookId }),
+    enabled: true,
+    staleTime: 1000 * 60 * 5,
+  });
 
-  const pagingInfo: PagingInfo = {
+  const listReviewsParams: ListReviewsParams = {
+    book_id: numericBookId,
     page: currentPage,
     page_size: pageSize,
-    total_items: totalReviews,
-    total_pages: Math.ceil(totalReviews / pageSize),
-    has_next: currentPage < Math.ceil(totalReviews / pageSize),
-    has_prev: currentPage > 1,
+    sort_by: sortBy,
+    ...(filterRating > 0 && { filter_rating: filterRating }),
   };
 
+  const reviewsQuery = useQuery<PaginatedResponse<ReviewCard>, Error>({
+    queryKey: [constVar.api_keys.reviews_list, listReviewsParams],
+    queryFn: () => fetchListReviews(listReviewsParams),
+    enabled: true, // Always run query, default value is provided
+    staleTime: 1000 * 30,
+  });
+
+  const metadata = metadataQuery.data;
+  const reviewsData = reviewsQuery.data?.data ?? [];
+  const pagingInfo = reviewsQuery.data?.paging;
+
+  const isLoading = metadataQuery.isLoading || reviewsQuery.isFetching;
+  const isError = metadataQuery.isError || reviewsQuery.isError;
+  const error = metadataQuery.error || reviewsQuery.error;
+
+  const totalReviews = metadata?.total_reviews ?? 0;
+  const avgRating = metadata?.average_rating ?? 0;
+
+  const stars: Star[] = metadata?.star_counts
+    ? Object.entries(metadata.star_counts)
+        .sort(([a], [b]) => parseInt(b) - parseInt(a))
+        .map(([rating, count]) => ({
+          id: parseInt(rating) as AllowedStarRating,
+          content: `${rating} Star`,
+          totalReviews: count,
+        }))
+    : [];
+
+  const totalPages = pagingInfo?.total_pages ?? 1;
   const maxPageButtons = 5;
   const pageRange: number[] = [];
-  const startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
-  const endPage = Math.min(
-    pagingInfo.total_pages,
-    startPage + maxPageButtons - 1
-  );
+  if (totalPages > 1) {
+    let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+    const endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
 
-  for (let i = startPage; i <= endPage; i++) {
-    pageRange.push(i);
+    if (endPage - startPage + 1 < maxPageButtons) {
+      startPage = Math.max(1, endPage - maxPageButtons + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pageRange.push(i);
+    }
   }
-
-  const isLoading = false;
 
   const handlePrevPage = (): void => {
     if (currentPage > 1) {
@@ -56,18 +122,21 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
   };
 
   const handleNextPage = (): void => {
-    if (pagingInfo.has_next) {
+    if (pagingInfo?.has_next) {
       setCurrentPage(currentPage + 1);
     }
   };
 
   const goToPage = (page: number): void => {
-    setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>): void => {
     const value = e.target.value as SortReviewBy;
     setSortBy(value);
+    setCurrentPage(1);
   };
 
   const handlePageSizeChange = (
@@ -83,6 +152,24 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
     setCurrentPage(1);
   };
 
+  // Render error message if needed
+  if (errorMsg) {
+    return (
+      <div className="container mx-auto py-8 px-4 max-w-5xl text-center text-red-600">
+        {errorMsg}
+      </div>
+    );
+  }
+
+  // Render error if query fails
+  if (isError) {
+    return (
+      <div className="container mx-auto py-8 px-4 max-w-5xl text-center text-red-600">
+        Error loading reviews: {error?.message || "Unknown error"}
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-5xl">
       <div className="bg-white rounded-lg shadow-md p-6">
@@ -96,47 +183,76 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
         </h2>
 
         <div className="mb-8">
-          <div className="flex items-center mb-4">
-            <div className="flex items-baseline">
-              <span className="text-3xl font-bold text-gray-900">
-                {avgRating} Star
-              </span>
+          {metadataQuery.isLoading ? (
+            <div className="animate-pulse h-8 bg-gray-200 rounded w-1/3 mb-4"></div>
+          ) : (
+            <div className="flex items-center mb-4">
+              <div className="flex items-baseline">
+                <span className="text-3xl font-bold text-gray-900">
+                  {avgRating.toFixed(1)} Star
+                </span>
+                <span className="ml-2 text-gray-600">
+                  ({totalReviews} Reviews)
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
-          <div className="flex flex-wrap gap-3 mb-6">
-            <button
-              onClick={() => handleStarFilterClick(0)}
-              className={`text-sm px-2 py-1 transition-colors border-b-2 ${
-                filterRating === 0
-                  ? "border-blue-500 text-blue-600 font-semibold"
-                  : "border-transparent text-gray-600 hover:text-gray-800"
-              }`}
-            >
-              All ({totalReviews})
-            </button>
-            {stars.map((star) => (
+          {metadataQuery.isLoading ? (
+            <div className="flex flex-wrap gap-3 mb-6">
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="animate-pulse h-6 bg-gray-200 rounded w-20"
+                ></div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-3 mb-6">
               <button
-                key={star.id}
-                onClick={() => handleStarFilterClick(star.id)}
+                onClick={() => handleStarFilterClick(0)}
+                disabled={isLoading}
                 className={`text-sm px-2 py-1 transition-colors border-b-2 ${
-                  filterRating === star.id
+                  filterRating === 0
                     ? "border-blue-500 text-blue-600 font-semibold"
                     : "border-transparent text-gray-600 hover:text-gray-800"
-                }`}
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {star.content} ({star.totalReviews})
+                All ({totalReviews})
               </button>
-            ))}
-          </div>
+              {stars.map((star) => (
+                <button
+                  key={star.id}
+                  onClick={() => handleStarFilterClick(star.id)}
+                  disabled={isLoading}
+                  className={`text-sm px-2 py-1 transition-colors border-b-2 ${
+                    filterRating === star.id
+                      ? "border-blue-500 text-blue-600 font-semibold"
+                      : "border-transparent text-gray-600 hover:text-gray-800"
+                  } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {star.content} ({star.totalReviews})
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="border-t border-gray-200 pt-6">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
             <div className="text-gray-600 mb-4 sm:mb-0">
-              Showing {(currentPage - 1) * pageSize + 1}-
-              {Math.min(currentPage * pageSize, totalReviews)} of {totalReviews}{" "}
-              reviews
+              {pagingInfo && totalReviews > 0 ? (
+                `Showing ${
+                  (pagingInfo.page - 1) * pagingInfo.page_size + 1
+                }-${Math.min(
+                  pagingInfo.page * pagingInfo.page_size,
+                  pagingInfo.total_items
+                )} of ${pagingInfo.total_items} reviews`
+              ) : totalReviews === 0 && !isLoading ? (
+                "No reviews found"
+              ) : (
+                <span className="animate-pulse h-5 bg-gray-200 rounded w-32 inline-block"></span>
+              )}
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex items-center">
@@ -151,7 +267,8 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
                   id="sortBy"
                   value={sortBy}
                   onChange={handleSortChange}
-                  className="border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isLoading}
+                  className="border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
                 >
                   <option value="newest">Newest to oldest</option>
                   <option value="oldest">Oldest to newest</option>
@@ -169,7 +286,8 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
                   id="pageSize"
                   value={pageSize}
                   onChange={handlePageSizeChange}
-                  className="border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  disabled={isLoading}
+                  className="border border-gray-300 rounded-md px-3 py-1.5 bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:bg-gray-100"
                 >
                   {allowedPageSizes.map((size) => (
                     <option key={size} value={size}>
@@ -182,62 +300,87 @@ const ReviewList = ({ bookId }: ReviewListProps) => {
           </div>
 
           <div className="space-y-6 mb-8">
-            <div className="border-b border-gray-200 pb-6">
-              <div className="flex justify-between mb-2 review-header">
-                <div className="ml-2 font-medium">Great book! | 5 Star</div>
-              </div>
+            {isLoading && reviewsData.length === 0 && (
+              <>
+                {[...Array(3)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="border-b border-gray-200 pb-6 animate-pulse"
+                  >
+                    <div className="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
+                    <div className="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                    <div className="h-4 bg-gray-200 rounded w-5/6 mb-3"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/4"></div>
+                  </div>
+                ))}
+              </>
+            )}
 
-              <div className="mt-2 review-content">
-                This was an excellent read. The characters were well-developed
-                and the plot kept me engaged throughout. Highly recommend to
-                anyone who enjoys this genre.
+            {!isLoading && reviewsData.length === 0 && (
+              <div className="text-center text-gray-500 italic py-4">
+                No reviews match the current filters.
               </div>
-              <div className="mt-2 text-sm text-gray-500">April 15, 2025</div>
-            </div>
+            )}
 
-            <div className="text-center text-gray-500 italic py-4">
-              Additional reviews would be loaded here
-            </div>
+            {reviewsData.map((review: ReviewCard) => (
+              <div key={review.id} className="border-b border-gray-200 pb-6">
+                <div className="flex justify-between mb-2 review-header">
+                  <div className="ml-2 font-medium">
+                    {review.review_title} | {review.rating_start} Star
+                  </div>
+                </div>
+
+                <div className="mt-2 review-content text-gray-700">
+                  {review.review_details}
+                </div>
+
+                <div className="mt-2 text-sm text-gray-500">
+                  {formatDate(review.review_date)}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="flex justify-center items-center">
-          <nav className="flex items-center space-x-1">
-            <button
-              onClick={handlePrevPage}
-              disabled={isLoading || currentPage === 1 || !pagingInfo.has_prev}
-              className="px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-              aria-label="Previous page"
-            >
-              <span>&laquo; Prev</span>
-            </button>
-
-            {pageRange.map((page) => (
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center">
+            <nav className="flex items-center space-x-1">
               <button
-                key={page}
-                onClick={() => goToPage(page)}
-                className={`px-3 py-2 rounded-md border ${
-                  page === currentPage
-                    ? "bg-blue-500 text-white border-blue-500"
-                    : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                } transition-colors`}
-                disabled={isLoading}
-                aria-current={page === currentPage ? "page" : undefined}
+                onClick={handlePrevPage}
+                disabled={isLoading || currentPage === 1}
+                className="px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                aria-label="Previous page"
               >
-                {page}
+                <span>&laquo; Prev</span>
               </button>
-            ))}
 
-            <button
-              onClick={handleNextPage}
-              disabled={isLoading || !pagingInfo.has_next}
-              className="px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
-              aria-label="Next page"
-            >
-              <span>Next &raquo;</span>
-            </button>
-          </nav>
-        </div>
+              {pageRange.map((page) => (
+                <button
+                  key={page}
+                  onClick={() => goToPage(page)}
+                  className={`px-3 py-2 rounded-md border ${
+                    page === currentPage
+                      ? "bg-blue-500 text-white border-blue-500 font-semibold"
+                      : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+                  } transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+                  disabled={isLoading}
+                  aria-current={page === currentPage ? "page" : undefined}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                onClick={handleNextPage}
+                disabled={isLoading || !(pagingInfo?.has_next ?? false)}
+                className="px-3 py-2 rounded-md border border-gray-300 bg-white text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                aria-label="Next page"
+              >
+                <span>Next &raquo;</span>
+              </button>
+            </nav>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -21,6 +21,14 @@ class AllowedReviewStar(str, Enum):
   Four = 4
   Five = 5
   
+from pydantic import BaseModel
+from typing import Dict
+
+class ReviewMetadataResponse(BaseModel):
+  star_counts: Dict[int, int] 
+  total_reviews: int
+  average_rating: int 
+  
 class ReviewBase(SQLModel):
   book_id: int = Field(foreign_key="book.id", index=True)
   review_title: str = Field(max_length=120)

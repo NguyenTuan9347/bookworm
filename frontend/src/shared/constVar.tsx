@@ -14,6 +14,8 @@ export const constVar = {
     { label: "About", ref: "/about" },
   ],
   api_keys: {
+    reviews_list: "reviews_list",
+    review_metadata: "review_metadata",
     book_detail: "book_by_id",
     filtered_and_sorted_books: "filtered_and_sort_books",
     featured_books: "featured_books",
@@ -105,6 +107,16 @@ export const constVar = {
     reviews: {
       range: {
         path: "/reviews/range",
+      },
+      list: {
+        path: "/reviews",
+        method: "GET",
+        paramsHint:
+          "page?, page_size?, sort_by? (oldest|newest), filter_rating?",
+      },
+      metadata: {
+        path: "/reviews/metadata",
+        method: "GET",
       },
     },
     user: {
