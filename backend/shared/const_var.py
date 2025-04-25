@@ -3,6 +3,7 @@ class SuccessMessages:
   success_logout = "Successfully logged out"
   order_success = "Order created successfully"
 class ErrorMessages:
+  invalid_request ="Invalid Request"
   invalid_order = "Invalid order"
   invalid_refresh_token = "invalid_refresh_token"
   incorrect_email_or_password= "Incorrect email or password" 

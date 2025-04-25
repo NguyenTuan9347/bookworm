@@ -4,6 +4,7 @@ import { fetchBookById } from "@/api/books";
 import { useQuery } from "@tanstack/react-query";
 import { constVar } from "@/shared/constVar";
 import { useCart } from "@/context/CartContext/cartContext";
+import ReviewList from "@/components/ReviewList/ReviewList";
 import QuantityInput from "@/components/QuantityInput/QuantityInput";
 
 const BookPage = () => {
@@ -207,11 +208,8 @@ const BookPage = () => {
         </div>
       </div>
 
-      <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-        <h2 className="mb-3 text-2xl font-semibold text-gray-800">Reviews</h2>
-        <div className="rounded-lg border border-dashed border-gray-200 p-4 text-center">
-          <p className="text-gray-500">No reviews yet.</p>
-        </div>
+      <div className="mt-8 flex flexr-row rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+        <ReviewList />
       </div>
     </div>
   );

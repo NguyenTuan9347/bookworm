@@ -213,3 +213,30 @@ export interface AuthContextValue {
   logout: () => Promise<void>;
   authRequireAPIFetch: AuthRequireAPIFetch;
 }
+
+export type AllowedStarRating = 0 | 1 | 2 | 3 | 4 | 5;
+
+export type SortReviewBy = "newest" | "oldest";
+
+export interface Review {
+  id: string;
+  content: string;
+  rating: number;
+  authorName: string;
+  date: string;
+}
+
+export interface Star {
+  id: AllowedStarRating;
+  content: string;
+  totalReviews: number;
+}
+
+export interface ReviewsResponse {
+  data: Review[];
+  paging: PagingInfo;
+}
+
+export interface ReviewListProps {
+  bookId?: string;
+}

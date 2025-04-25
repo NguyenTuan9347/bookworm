@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { DropdownProps, NavBarProps } from "../../shared/interfaces";
 import { useCart } from "@/context/CartContext/cartContext";
-import "./NavBar.css";
 import { useAuth } from "@/context/Authentication/authContext";
 import LoginPopUp from "../LoginPopUp/LoginPopUp";
 import { constVar } from "@/shared/constVar";

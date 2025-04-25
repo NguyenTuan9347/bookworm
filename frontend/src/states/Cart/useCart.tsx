@@ -54,7 +54,7 @@ export const createCartStore = (uid: string | number | null | undefined) => {
               book.id === newBook.id
                 ? {
                     ...book,
-                    quantity: Math.max(book.quantity + newBook.quantity, 8),
+                    quantity: Math.min(book.quantity + newBook.quantity, 8),
                   }
                 : book
             );
@@ -86,6 +86,7 @@ export const createCartStore = (uid: string | number | null | undefined) => {
           );
           set({ books: updatedBooks });
         },
+
         formatToOrder: (user_id: number) => {
           const cartBooks = get().books;
 
@@ -100,6 +101,7 @@ export const createCartStore = (uid: string | number | null | undefined) => {
             items,
           };
         },
+
         clearCart: () => set({ books: [] }),
       }),
       {
