@@ -3,7 +3,7 @@ import { useState } from "react";
 import QuantityInput from "../QuantityInput/QuantityInput";
 import { useNavigate } from "react-router-dom";
 import { constVar } from "@/shared/constVar";
-
+import { safeParseFloat } from "@/shared/utils";
 const BookRow = ({
   book,
   onRemove,
@@ -66,7 +66,7 @@ const BookRow = ({
       </div>
       <div className="price w-1/6 text-center">
         {book.price_symbol}
-        {book.localize_discount_price}
+        {safeParseFloat(book.localize_discount_price).toFixed(2)}
       </div>
       <div
         className="quantity-controls w-2/6 flex justify-center"
@@ -83,7 +83,7 @@ const BookRow = ({
       </div>
       <div className="book-total w-1/6 text-right font-medium">
         {book.price_symbol}
-        {(book.localize_discount_price * quantity).toFixed(2)}
+        {safeParseFloat(book.localize_discount_price * quantity).toFixed(2)}
       </div>
     </div>
   );

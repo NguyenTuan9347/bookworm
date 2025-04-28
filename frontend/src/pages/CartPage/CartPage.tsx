@@ -7,6 +7,7 @@ import { createOrder } from "@/api/orders";
 import { AlertPopup } from "@/components/Alert/AlertPopup";
 import { useNavigate } from "react-router-dom";
 import { constVar } from "@/shared/constVar";
+import { safeParseFloat } from "@/shared/utils";
 
 const CartPage = () => {
   const useCartStore = useCart();
@@ -140,7 +141,7 @@ const CartPage = () => {
             <div className="total mb-6 text-center">
               <p className="text-3xl font-bold text-gray-900">
                 {books[0].price_symbol}
-                {totalPrice.toFixed(2)}
+                {safeParseFloat(totalPrice).toFixed(2)}
               </p>
             </div>
             <button

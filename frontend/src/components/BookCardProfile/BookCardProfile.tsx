@@ -1,13 +1,7 @@
 import { BookProfileCardProps } from "../../shared/interfaces";
 import { useNavigate } from "react-router-dom";
 import { constVar } from "@/shared/constVar";
-
-const safeParseFloat = (value: string | number | undefined | null): number => {
-  if (value === undefined || value === null) return 0;
-  const parsed = parseFloat(String(value));
-  return isNaN(parsed) ? 0 : parsed;
-};
-
+import { safeParseFloat } from "@/shared/utils";
 const BookProfileCard = ({ index, book }: BookProfileCardProps) => {
   const navigate = useNavigate();
 

@@ -14,8 +14,6 @@ logging.basicConfig(level=logging.INFO)
 
 def get_client_ip(request: Request) -> Optional[str]:
     x_forwarded_for = request.headers.get('x-forwarded-for')
-    print(request.headers)
-
     if x_forwarded_for:
         ip = x_forwarded_for.split(',')[0].strip()
         return ip
