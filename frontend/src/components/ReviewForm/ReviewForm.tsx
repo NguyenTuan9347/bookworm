@@ -106,6 +106,7 @@ const ReviewForm = ({ motherClassName, bookId }: ReviewListProps) => {
             type="text"
             id="title"
             value={title}
+            maxLength={120}
             onChange={(e) => setTitle(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="What's most important to know?"

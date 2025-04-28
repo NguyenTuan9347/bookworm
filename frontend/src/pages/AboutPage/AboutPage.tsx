@@ -33,12 +33,12 @@ const AboutPage = () => {
             <p className="mb-4 leading-relaxed">
               One of the last travel bookstores in the country, our Manhattan
               store carries a range of guidebooks (all 10% off) to suit the
-              needs and tastes of every traveler and budget.
+              needs and tastes of every traveller and budget.
             </p>
             <p className="leading-relaxed">
               We believe that a novel or travelogue can be just as valuable a
-              key to a place as any guidebook, and our well-read, well-traveled
-              staff is happy to make reading recommendations for any traveler,
+              key to a place as any guidebook, and our well-read, well-travelled
+              staff is happy to make reading recommendations for any traveller,
               book lover, or gift giver.
             </p>
           </div>

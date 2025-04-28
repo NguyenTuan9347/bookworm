@@ -125,15 +125,15 @@ const BookPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-[8fr_4fr] gap-6">
         <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex flex-col md:flex-row">
-            <div className="md:w-2/5">
+            <div className="md:w-2/5 flex flex-col items-end px-4">
               <img
                 src={book.book_cover_photo}
                 alt={book.book_title}
                 className="mx-auto mb-4 max-w-xs rounded-md shadow-sm"
               />
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 overflow-hidden">
                 <span className="font-medium">By</span>{" "}
-                <span className="font-semibold text-gray-800">
+                <span className="font-semibold text-gray-800 break-words">
                   {book.author_name}
                 </span>
               </p>
@@ -154,7 +154,7 @@ const BookPage = () => {
 
         <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm h-fit">
           <div className="mb-4 rounded-md bg-gray-50 p-4">
-            <div className="flex books-baseline gap-2">
+            <div className="flex items-baseline gap-2">
               {book.discount_price !== book.book_price && (
                 <span className="text-lg text-gray-500 line-through">
                   ${book.book_price}

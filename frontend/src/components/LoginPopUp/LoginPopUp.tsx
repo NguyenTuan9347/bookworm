@@ -56,7 +56,7 @@ const LoginPopUp = (props: LoginPopUpProps) => {
       }
     } catch (err) {
       console.error("Login failed:", err);
-      setError(constVar.errorMessage?.APIDefault || "Failed to sign in");
+      setError(constVar.errorMessage.invalidEmailOrPass || "Failed to sign in");
       onFailed();
     } finally {
       setIsLoading(false);
