@@ -1,6 +1,6 @@
 import { useCart } from "@/context/CartContext/cartContext";
 import BookSheet from "@/components/BookSheet/BookSheet";
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState, useCallback } from "react";
 import LoginPopUp from "@/components/LoginPopUp/LoginPopUp";
 import { useAuth } from "@/context/Authentication/authContext";
 import { createOrder } from "@/api/orders";
@@ -27,12 +27,42 @@ const CartPage = () => {
   const successTimerRef = useRef<NodeJS.Timeout | null>(null);
   const errorTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const clearSuccessAlert = useCallback(() => {
+    setShowSuccessAlert(false);
+    clearCart();
+    navigate(constVar.links[0].ref);
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+  }, [setShowSuccessAlert, clearCart, navigate]);
+
+  const clearErrorAlert = () => {
+    setShowErrorAlert(false);
+    if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+  };
+
   useEffect(() => {
+    const handlePageClick = () => {
+      if (showSuccessAlert) {
+        clearSuccessAlert();
+      }
+      if (showErrorAlert) {
+        clearErrorAlert();
+      }
+    };
+
+    window.addEventListener("click", handlePageClick);
+
     return () => {
+      window.removeEventListener("click", handlePageClick);
       if (successTimerRef.current) clearTimeout(successTimerRef.current);
       if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
     };
-  }, []);
+  }, [
+    showSuccessAlert,
+    showErrorAlert,
+    navigate,
+    clearCart,
+    clearSuccessAlert,
+  ]);
 
   const totalPrice = useMemo(() => {
     return books.reduce(
@@ -50,12 +80,7 @@ const CartPage = () => {
       createOrder(authRequireAPIFetch, formatToOrder(uid))
         .then(() => {
           setShowSuccessAlert(true);
-
-          successTimerRef.current = setTimeout(() => {
-            setShowSuccessAlert(false);
-            clearCart();
-            navigate(constVar.links[0].ref);
-          }, 10_000);
+          successTimerRef.current = setTimeout(clearSuccessAlert, 10_000);
         })
         .catch((error) => {
           console.error("Order failed:", error);
@@ -66,10 +91,7 @@ const CartPage = () => {
               removeBook(err.book_id.toString());
             });
           }
-
-          errorTimerRef.current = setTimeout(() => {
-            setShowErrorAlert(false);
-          }, 3_000);
+          errorTimerRef.current = setTimeout(clearErrorAlert, 3_000);
         });
     }
   };

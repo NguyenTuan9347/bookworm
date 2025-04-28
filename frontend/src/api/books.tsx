@@ -2,6 +2,7 @@ import { constVar } from "@/shared/constVar";
 import { fetchApi } from "../api/core";
 
 import {
+  FeaturedBooksType,
   ListBooksParams,
   PaginatedResponse,
   DiscountedBookProfileCardProp,
@@ -39,6 +40,23 @@ export function fetchBookById(params: BookParams): Promise<BookProfile> {
   );
 }
 
+export function fetchFeaturedBooks(
+  type: FeaturedBooksType,
+  params: ListFeaturedBooksParams = {}
+): Promise<DiscountedBookProfileCardProp[]> {
+  const apiParams = { ...params };
+
+  const apiRoute =
+    type === FeaturedBooksType.Recommended
+      ? constVar.api_routes.books.recommended
+      : constVar.api_routes.books.popular;
+
+  return fetchApi<DiscountedBookProfileCardProp[]>(apiRoute.path, {
+    method: apiRoute.method,
+    params: apiParams,
+  });
+}
+
 export function fetchMostDiscountedBooks(
   params: ListMostDiscountedBooksParams = {}
 ): Promise<DiscountedBookProfileCardProp[]> {
@@ -48,20 +66,6 @@ export function fetchMostDiscountedBooks(
     constVar.api_routes.books.topDiscountAmount.path,
     {
       method: constVar.api_routes.books.topDiscountAmount.method,
-      params: apiParams,
-    }
-  );
-}
-
-export function fetchFeaturedBooks(
-  params: ListFeaturedBooksParams = {}
-): Promise<DiscountedBookProfileCardProp[]> {
-  const apiParams = { ...params };
-
-  return fetchApi<DiscountedBookProfileCardProp[]>(
-    constVar.api_routes.books.featured.path,
-    {
-      method: constVar.api_routes.books.featured.method,
       params: apiParams,
     }
   );

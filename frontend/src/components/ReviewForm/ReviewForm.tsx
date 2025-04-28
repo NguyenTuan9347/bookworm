@@ -5,9 +5,12 @@ import {
   ReviewCreate,
 } from "@/shared/interfaces";
 import { createReview } from "@/api/reviews";
+import { useQueryClient } from "@tanstack/react-query";
+import { constVar } from "@/shared/constVar";
 
 const ReviewForm = ({ motherClassName, bookId }: ReviewListProps) => {
   const numericBookId = bookId ? parseInt(bookId) : 1;
+  const queryClient = useQueryClient();
   const [rating, setRating] = useState<AllowedStarRating>(0);
   const [title, setTitle] = useState<string>("");
   const [details, setDetails] = useState<string>("");
@@ -40,7 +43,12 @@ const ReviewForm = ({ motherClassName, bookId }: ReviewListProps) => {
       await createReview(data);
       setStatus("success");
       setMessage("Review submitted successfully!");
-
+      queryClient.invalidateQueries({
+        queryKey: [constVar.api_keys.reviews_list],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [constVar.api_keys.review_metadata],
+      });
       setTimeout(() => {
         setRating(0);
         setTitle("");

@@ -46,7 +46,7 @@ const NavBar = ({ links, signInMetadata }: NavBarProps) => {
   const getLinkClass = (href: string) => {
     const base =
       "text-gray-700 text-xs px-3 py-1 rounded-md hover:text-blue-500 hover:bg-gray-200 transition duration-150 ease-in-out";
-    const active = "underline decoration-blue-50 font-semibold";
+    const active = "underline decoration-gray-500 font-semibold";
     return currentPath === href ? `${base} ${active} ` : `${base}`;
   };
 

@@ -80,19 +80,34 @@ def list_most_discounted_books(
 
 
 @router.get(
-    "/books/featured",
+    "/books/recommended",
     response_model=List[BookRead], 
-    summary="Get top K featured books (recommended or popular)"
+    summary="Get top K featured books (recommended)"
 )
 def list_featured_books(
     session: SessionDep,
-    sort_by: FeaturedSortOptions = Query(FeaturedSortOptions.RECOMMENDED, title="Featured criteria"),
     top_k: int = Query(8, title="Number of books to return", ge=1) 
 ):
     if session is None:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database session not available")
 
-    books = get_top_k_featured(session=session, sort_by=sort_by, k=top_k)
+    books = get_top_k_featured(session=session, sort_by=FeaturedSortOptions.RECOMMENDED, k=top_k)
+    return books
+
+
+@router.get(
+    "/books/popular",
+    response_model=List[BookRead], 
+    summary="Get top K featured books (popular)"
+)
+def list_featured_books(
+    session: SessionDep,
+    top_k: int = Query(8, title="Number of books to return", ge=1) 
+):
+    if session is None:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database session not available")
+
+    books = get_top_k_featured(session=session, sort_by=FeaturedSortOptions.POPULAR, k=top_k)
     return books
 
 

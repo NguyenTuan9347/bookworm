@@ -4,7 +4,7 @@ from sqlmodel import SQLModel, create_engine, Session, delete
 from datetime import datetime, timedelta
 from decimal import Decimal
 
-from main import backend
+from main import app
 from controllers.deps import get_db
 from models.reviews import Review
 from models.books import Book
@@ -27,7 +27,7 @@ def get_session_override():
 
 @pytest.fixture(scope="module")
 def client():
-  with TestClient(backend) as c:
+  with TestClient(app) as c:
     c.app.dependency_overrides[get_db] = get_session_override
     yield c
 

@@ -73,7 +73,7 @@ const ReviewList = ({ bookId, motherClassName }: ReviewListProps) => {
     queryKey: [constVar.api_keys.reviews_list, listReviewsParams],
     queryFn: () => fetchListReviews(listReviewsParams),
     enabled: true,
-    staleTime: 1000 * 30,
+    staleTime: 1000 * 30 * 5,
   });
 
   const metadata = metadataQuery.data;

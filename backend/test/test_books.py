@@ -12,7 +12,7 @@ from models.reviews import Review
 from models.discounts import Discount
 from core.config import settings
 from controllers.deps import get_db
-from main import backend
+from main import app
 
 TEST_DATABASE_URL = "sqlite:///./test.db"
 
@@ -110,7 +110,7 @@ def create_test_data():
 
 @pytest.fixture(scope="module")
 def client():
-    with TestClient(backend) as c:
+    with TestClient(app) as c:
         c.app.dependency_overrides[get_db] = get_session_override
         yield c
 
@@ -160,13 +160,53 @@ def test_list_most_discounted_books(client):
     expected_top_3 = [5, 1, 7]
     assert [b["id"] for b in res_custom.json()] == expected_top_3
 
-def test_list_featured_books(client):
-    res_rec = client.get("/books/featured?sort_by=recommended")
+def test_list_recommended_books(client):
+    res_rec = client.get("/books/recommended")
     assert res_rec.status_code == 200
     expected_recommended = [3, 5, 1, 6, 7, 11, 2, 12]
     assert [b["id"] for b in res_rec.json()] == expected_recommended
 
-    res_pop = client.get("/books/featured?sort_by=popular")
+    
+def test_list_popular_books(client):
+    res_pop = client.get("/books/popular")
     assert res_pop.status_code == 200
     expected_popular = [1, 3, 7, 6, 5, 11, 12, 2]
     assert [b["id"] for b in res_pop.json()] == expected_popular
+
+
+def test_list_books_invalid_sort_by(client):
+    res = client.get("/books?sort_by=invalid_value&page_size=20")
+    assert res.status_code == 422
+    
+def test_list_books_zero_top_k(client):
+    res = client.get("/books/top-discounted?top_k=0")
+    assert res.status_code == 422
+
+
+def test_list_books_negative_top_k(client):
+    res = client.get("/books/top-discounted?top_k=-1")
+    assert res.status_code == 422
+
+def test_list_books_large_top_k(client):
+    res = client.get("/books/top-discounted?top_k=9999")
+    assert res.status_code == 200
+    assert len(res.json()) <= 12  # you have 12 books, adjust if needed
+
+def test_list_books_invalid_category(client):
+    res = client.get("/books?category=NonExistentCategory&page_size=20")
+    assert res.status_code == 200
+    assert len(res.json()["data"]) == 0
+    
+def test_list_books_empty_results(client):
+    res = client.get("/books?author=NonExistentAuthor&page_size=20")
+    assert res.status_code == 200
+    assert len(res.json()["data"]) == 0
+
+def test_list_books_recommended_invalid_top_k(client):
+    res = client.get("/books/recommended?top_k=-1")
+    assert res.status_code == 422  
+    
+def test_list_books_popular_invalid_top_k(client):
+    res = client.get("/books/popular?top_k=-1")
+    assert res.status_code == 422
+

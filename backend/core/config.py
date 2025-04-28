@@ -130,9 +130,7 @@ class Settings:
         return sorted(list(processed_origins))
 
     @property
-    def SQLALCHEMY_DATABASE_URI(self) -> str:
-        return "sqlite://///home/min/School/Rookies/book_app/backend/test.db" #TO DO CHANGE TO POSTGRE
-    
+    def SQLALCHEMY_DATABASE_URI(self) -> str:    
         scheme = "postgresql"
         user = self.POSTGRES_USER
         password = f":{self.POSTGRES_PASSWORD}" if self.POSTGRES_PASSWORD else ""

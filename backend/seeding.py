@@ -180,7 +180,7 @@ def generate_fake_data(
     
     print("Data generation completed successfully!")
 
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
+engine = create_engine("sqlite:////home/min/School/Rookies/book_app/backend/test.db")
 
 def init_db(session: Session) -> None:
     """Initialize the database with the admin user if it doesn't exist."""
@@ -205,11 +205,11 @@ def main():
         init_db(session)
         generate_fake_data(
             session=session,
-            num_authors=2000,
-            num_categories=1000,
-            num_books=10000,
-            num_discounts=1000,
-            num_reviews=20000
+            num_authors=3000,
+            num_categories=2000,
+            num_books=30000,
+            num_discounts=3000,
+            num_reviews=50000
         )
 
 if __name__ == "__main__":

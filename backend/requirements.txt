@@ -6,3 +6,4 @@ PyJWT
 passlib[bcrypt]
 bcrypt
 pytest
+psycopg2-binary

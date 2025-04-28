@@ -3,14 +3,13 @@ import BookGrid from "@/components/BookGrid/BookGrid";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-
 import { fetchMostDiscountedBooks, fetchFeaturedBooks } from "@/api/books";
-
+import { FeaturedBooksType } from "@/shared/interfaces";
 import { constVar } from "@/shared/constVar";
 
 const HomePage = () => {
-  const [activeTab, setActiveTab] = useState<"recommended" | "popular">(
-    "recommended"
+  const [activeTab, setActiveTab] = useState<FeaturedBooksType>(
+    FeaturedBooksType.Recommended
   );
 
   const {
@@ -34,11 +33,8 @@ const HomePage = () => {
     isError: isErrorFeatured,
     error: errorFeatured,
   } = useQuery({
-    queryKey: [
-      constVar.api_keys.featured_books,
-      { sort_by: activeTab, top_k: 8 },
-    ],
-    queryFn: () => fetchFeaturedBooks({ sort_by: activeTab, top_k: 8 }),
+    queryKey: [constVar.api_keys.featured_books, { sort_by: activeTab }],
+    queryFn: () => fetchFeaturedBooks(activeTab),
     staleTime: 1000 * 60,
   });
 
@@ -91,9 +87,9 @@ const HomePage = () => {
         <div className="show-case flex flex-col">
           <div className="options flex flex-row mb-4 justify-center">
             <button
-              onClick={() => setActiveTab("recommended")}
+              onClick={() => setActiveTab(FeaturedBooksType.Recommended)}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors duration-150 border ${
-                activeTab === "recommended"
+                activeTab === FeaturedBooksType.Recommended
                   ? "border-blue-600 text-blue-600 bg-blue-50" // Active: Blue border, text, light bg
                   : "border-transparent text-gray-600 hover:text-blue-600 hover:bg-gray-100"
               }`}
@@ -101,9 +97,9 @@ const HomePage = () => {
               Recommended
             </button>
             <button
-              onClick={() => setActiveTab("popular")}
+              onClick={() => setActiveTab(FeaturedBooksType.Popular)}
               className={`px-4 py-2 text-sm font-medium rounded-md transition-colors duration-150 border ml-2 ${
-                activeTab === "popular"
+                activeTab === FeaturedBooksType.Popular
                   ? "border-blue-600 text-blue-600 bg-blue-50"
                   : "border-transparent text-gray-600 hover:text-blue-600 hover:bg-gray-100"
               }`}

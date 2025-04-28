@@ -53,11 +53,15 @@ export const constVar = {
         method: "GET",
         paramsHint: "top_k? (query, default 10, e.g., ?top_k=10)",
       },
-      featured: {
-        path: "/books/featured",
+      recommended: {
+        path: "/books/recommended",
         method: "GET",
-        paramsHint:
-          "sort_by? (query: recommended|popular, default recommended), top_k? (query, default 8, e.g., ?sort_by=popular&top_k=5)",
+        paramsHint: "top_k? (query, default 8, e.g., ?top_k=5)",
+      },
+      popular: {
+        path: "/books/popular",
+        method: "GET",
+        paramsHint: "top_k? (query, default 8, e.g., ?top_k=5)",
       },
     },
     order: {

@@ -102,16 +102,27 @@ def get_books(
     if sort_by == SortByOptions.popularity:
         review_count_label = "review_count"
         avg_rating_label = "average_rating"
-        group_by_cols = [Book.id] 
+        
+        # PostgreSQL needs all non-aggregated columns in GROUP BY
+        # Create a subquery to avoid GROUP BY issues with the base query columns
+        popularity_subquery = (
+            select(
+                Book.id,
+                func.count(Review.id).label(review_count_label),
+                func.coalesce(func.avg(Review.rating_start), 0.0).cast(Float).label(avg_rating_label)
+            )
+            .join(Review, Review.book_id == Book.id, isouter=True)
+            .group_by(Book.id)
+            .subquery()
+        )
         
         result_query = (
             result_query
-            .join(Review, Review.book_id == Book.id, isouter=True)
-            .group_by(*group_by_cols)
+            .join(popularity_subquery, popularity_subquery.c.id == Book.id)
             .add_columns(
-                func.count(Review.id).label(review_count_label),
-                func.coalesce(func.avg(Review.rating_start), 0.0).cast(Float).label(avg_rating_label)
-             )
+                popularity_subquery.c[review_count_label],
+                popularity_subquery.c[avg_rating_label]
+            )
             .order_by(desc(review_count_label), asc(effective_price_label))
         )
     elif sort_by == SortByOptions.default:
@@ -221,20 +232,29 @@ def get_top_k_discounted_books(session: Session, k: int = 10) -> List[BookRead]:
     return items
 
 
-
 def get_top_k_featured(session: Session, sort_by: FeaturedSortOptions, k: int) -> List[BookRead]:
     base_query, effective_price_label, dicount_amount_label = construct_base_book_query()
 
     avg_rating_label = "average_rating"
     review_count_label = "review_count"
 
-    query_with_aggregates = (
-        base_query 
-        .join(Review, Review.book_id == Book.id, isouter=True)
-        .group_by(Book.id) 
-        .add_columns(
+    rating_agg_subquery = (
+        select(
+            Book.id,
             func.count(Review.id).label(review_count_label),
             func.coalesce(func.avg(Review.rating_start), 0.0).cast(Float).label(avg_rating_label)
+        )
+        .join(Review, Review.book_id == Book.id, isouter=True)
+        .group_by(Book.id)
+        .subquery()
+    )
+
+    query_with_aggregates = (
+        base_query
+        .join(rating_agg_subquery, rating_agg_subquery.c.id == Book.id)
+        .add_columns(
+            rating_agg_subquery.c[review_count_label],
+            rating_agg_subquery.c[avg_rating_label]
         )
     )
 

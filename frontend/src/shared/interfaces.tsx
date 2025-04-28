@@ -4,6 +4,11 @@ export interface Link {
   label: string;
 }
 
+export enum FeaturedBooksType {
+  Recommended = "recommended",
+  Popular = "popular",
+}
+
 export interface ReviewMetadataParams {
   book_id: number;
 }
