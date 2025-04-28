@@ -66,7 +66,7 @@ const BookRow = ({
       </div>
       <div className="price w-1/6 text-center">
         {book.price_symbol}
-        {book.discount_price}
+        {book.localize_discount_price}
       </div>
       <div
         className="quantity-controls w-2/6 flex justify-center"

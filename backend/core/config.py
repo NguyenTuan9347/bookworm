@@ -7,8 +7,10 @@ try:
 except ImportError:
     raise ImportError("Please install python-dotenv: pip install python-dotenv")
 
-PROJECT_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "/shared")
-DEFAULT_GEOIP_DB_PATH = os.path.join(PROJECT_ROOT, "GeoLite2-Country", "GeoLite2-Country.mmdb") 
+from pathlib import Path
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_GEOIP_DB_PATH = PROJECT_ROOT / "shared" / "GeoLite2-Country" / "GeoLite2-Country.mmdb"
 
 def parse_cors_value(value: Any) -> List[str]:
     if isinstance(value, list):

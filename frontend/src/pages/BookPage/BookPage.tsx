@@ -59,6 +59,8 @@ const BookPage = () => {
       ...book,
       book_price: Number(book.book_price),
       discount_price: Number(book.discount_price),
+      localize_price: Number(book.localize_price),
+      localize_discount_price: Number(book.localize_discount_price),
       quantity: quantityToSet,
     });
 
@@ -157,11 +159,13 @@ const BookPage = () => {
             <div className="flex items-baseline gap-2">
               {book.discount_price !== book.book_price && (
                 <span className="text-lg text-gray-500 line-through">
-                  ${book.book_price}
+                  {book.price_symbol}
+                  {book.localize_price}
                 </span>
               )}
               <span className="text-2xl font-bold text-gray-800">
-                ${book.discount_price}
+                {book.price_symbol}
+                {book.localize_discount_price}
               </span>
             </div>
           </div>

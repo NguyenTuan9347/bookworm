@@ -15,7 +15,10 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+
   server: {
+    host: true,
+    allowedHosts:["d8e8-42-117-13-146.ngrok-free.app"],
     proxy: {
       '/api': {
         target: 'http://localhost:8000', 

@@ -11,6 +11,17 @@ geoip_reader:Optional[geoip2.database.Reader] = None
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
+def get_client_ip(request: Request) -> Optional[str]:
+    x_forwarded_for = request.headers.get('x-forwarded-for')
+    print(request.headers)
+
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0].strip()
+        return ip
+
+    return request.client.host
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global geoip_reader
@@ -53,11 +64,10 @@ def get_geoip_data(request: Request):
     if not geoip_reader:
         return None
 
-    ip_address = request.client.host
+    ip_address = get_client_ip(request)
     if not ip_address or not is_public_ip(ip_address):
-        logger.debug("Skipping private IP: %s", ip_address)
+        logger.info("Skipping private IP: %s", ip_address)
         return None
-
     try:
         return geoip_reader.country(ip_address)
     except geoip2.errors.AddressNotFoundError:
