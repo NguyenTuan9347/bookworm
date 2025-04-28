@@ -79,7 +79,7 @@ export interface AlertComponentProps {
 
 export interface CartState {
   books: BookCartProps[];
-  addBook: (book: BookCartProps) => void;
+  addBook: (book: BookCartProps) => string;
   replaceBook: (book: BookCartProps) => void;
   removeBook: (bookId: string) => void;
   formatToOrder: (user_id: number) => OrderCreate;

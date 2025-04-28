@@ -55,7 +55,7 @@ const BookPage = () => {
       return;
     }
 
-    addBook({
+    const success = addBook({
       ...book,
       book_price: Number(book.book_price),
       discount_price: Number(book.discount_price),
@@ -64,8 +64,13 @@ const BookPage = () => {
       quantity: quantityToSet,
     });
 
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+    if (success !== constVar.errorMessage.quantityExceed) {
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+    } else {
+      setShowFailure(true);
+      setTimeout(() => setShowFailure(false), 3000);
+    }
   };
 
   const handleMaxReached = () => {

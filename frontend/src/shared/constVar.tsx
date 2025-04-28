@@ -7,12 +7,17 @@ export const sortByOptions: SortByOptions[] = [
   "price_desc",
 ];
 
+export const MAX_BOOK_QUANTITY = 8;
+
 export const constVar = {
   links: [
     { label: "Home", ref: "/" },
     { label: "Shop", ref: "/shop" },
     { label: "About", ref: "/about" },
   ],
+  successMessage: {
+    default: "sucess",
+  },
   api_keys: {
     reviews_list: "reviews_list",
     review_metadata: "review_metadata",
@@ -27,8 +32,9 @@ export const constVar = {
   },
   errorMessage: {
     loginOnly: "Cannot perform this action without a valid user ID.",
+    quantityExceed: "QUANTITY_EXCEEDS_LIMIT",
     failedOnCreateOrder: "On order creation there some thing gone wrong",
-    invalidItem: "Invalid item provided to addItem",
+    invalidItem: "Invalid book provided to addBook",
     invalidEmailOrPass: "Invalid email or password was given",
     missingBookID: "Book ID is required to fetch book details.",
     APIDefault: "Something gone wrong when called API",
