@@ -29,18 +29,21 @@ const BookRow = ({
   };
 
   const handleMinReached = () => {
-    console.log(`Minimum quantity reached for book ${book.id}`);
+    console.log(
+      `Minimum quantity reached for book {book.price_symbol}{book.id}`
+    );
   };
 
   const handleMaxReached = () => {
-    console.log(`Maximum quantity reached for book ${book.id}`);
+    console.log(
+      `Maximum quantity reached for book {book.price_symbol}{book.id}`
+    );
   };
 
   const handleOnClick = () => {
     navigate(constVar.api_routes.books.detail.pathTemplate(book.id));
   };
 
-  // Function to prevent clicks in the quantity section from triggering row navigation
   const handleQuantitySectionClick = (e: React.MouseEvent) => {
     e.stopPropagation();
   };
@@ -61,7 +64,10 @@ const BookRow = ({
           <h2 className="text-sm text-gray-600">{book.author_name}</h2>
         </div>
       </div>
-      <div className="price w-1/6 text-center">${book.discount_price}</div>
+      <div className="price w-1/6 text-center">
+        {book.price_symbol}
+        {book.discount_price}
+      </div>
       <div
         className="quantity-controls w-2/6 flex justify-center"
         onClick={handleQuantitySectionClick}
@@ -76,7 +82,8 @@ const BookRow = ({
         />
       </div>
       <div className="book-total w-1/6 text-right font-medium">
-        ${(book.discount_price * quantity).toFixed(2)}
+        {book.price_symbol}
+        {(book.localize_discount_price * quantity).toFixed(2)}
       </div>
     </div>
   );

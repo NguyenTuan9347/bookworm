@@ -7,6 +7,9 @@ try:
 except ImportError:
     raise ImportError("Please install python-dotenv: pip install python-dotenv")
 
+PROJECT_ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "/shared")
+DEFAULT_GEOIP_DB_PATH = os.path.join(PROJECT_ROOT, "GeoLite2-Country", "GeoLite2-Country.mmdb") 
+
 def parse_cors_value(value: Any) -> List[str]:
     if isinstance(value, list):
         return [str(item).strip() for item in value]
@@ -24,6 +27,74 @@ def parse_cors_value(value: Any) -> List[str]:
         return [item.strip() for item in value.split(",")]
     else:
         return [value]
+    
+import csv
+import os
+import warnings
+from decimal import Decimal, InvalidOperation
+from typing import Dict, Any, Union
+
+def load_currency_rates_from_csv(csv_filepath: str) -> Dict[str, Dict[str, Union[str, Decimal]]]:
+    currency_data: Dict[str, Dict[str, Union[str, Decimal]]] = {}
+
+    if not os.path.exists(csv_filepath):
+        raise FileNotFoundError(f"Currency CSV file not found at: {csv_filepath}")
+
+    try:
+        with open(csv_filepath, mode='r', encoding='utf-8') as csvfile:
+            reader = csv.DictReader(csvfile, delimiter="|")
+
+            header_map = {h.lower().strip(): h for h in reader.fieldnames or []}
+            required_headers = ['country code', 'currency symbol', 'rate']
+            mapped_headers = {}
+            missing_headers = []
+
+            for req_h in required_headers:
+                if req_h in header_map:
+                    mapped_headers[req_h] = header_map[req_h]
+                else:
+                    missing_headers.append(req_h)
+
+            if missing_headers:
+                 raise ValueError(f"CSV file '{csv_filepath}' is missing required headers: {', '.join(missing_headers)}")
+
+            country_code_col = mapped_headers['country code']
+            symbol_col = mapped_headers['currency symbol']
+            rate_col = mapped_headers['rate']
+
+            for row_num, row in enumerate(reader, start=2):
+                country_code = row.get(country_code_col, "").strip().lower()
+                symbol = row.get(symbol_col, "").strip()
+                rate_str = row.get(rate_col, "").strip()
+
+                if not country_code or not symbol or not rate_str:
+                    warnings.warn(f"Skipping row {row_num} in '{csv_filepath}' due to missing data.", stacklevel=2)
+                    continue
+
+                try:
+                    rate_decimal = Decimal(rate_str)
+                except InvalidOperation:
+                    warnings.warn(
+                        f"Skipping row {row_num} in '{csv_filepath}' due to invalid rate value: '{rate_str}'. "
+                        f"Could not convert to Decimal.", stacklevel=2
+                    )
+                    continue
+
+                currency_data[country_code] = {
+                    'symbol': symbol,
+                    'rate': rate_decimal
+                }
+
+    except FileNotFoundError:
+        raise
+    except Exception as e:
+        warnings.warn(f"Error reading currency CSV file '{csv_filepath}': {e}", stacklevel=2)
+        return {}
+
+    if not currency_data:
+         warnings.warn(f"No valid currency data loaded from '{csv_filepath}'.", stacklevel=2)
+
+    return currency_data
 
 class Settings:
     API_PREFIX_STR: str = ""
@@ -42,7 +113,9 @@ class Settings:
     POSTGRES_PORT: int = 5432
     POSTGRES_PASSWORD: str = ""
     POSTGRES_DB: str = ""
-
+    
+    DEFAULT_COUNTRY_CODE = "us"
+    GEOIP_DATABASE_PATH: str = DEFAULT_GEOIP_DB_PATH
     SECRET_KEY: str
     ACCESS_SECRET_KEY: str
     REFRESH_SECRET_KEY: str
@@ -50,7 +123,7 @@ class Settings:
     POSTGRES_SERVER: str
     POSTGRES_USER: str
     BACKEND_CORS_ORIGINS: List[str]
-
+    CURRENCY_RATES_DICT = {}
     def __init__(self, env_file: str = ".env"):
         if not os.path.exists(env_file):
             warnings.warn(f".env file not found at {os.path.abspath(env_file)}", stacklevel=1)
@@ -154,6 +227,7 @@ try:
     base_dir = os.path.dirname(os.path.abspath(__file__))
     env_path = os.path.join(base_dir, ".env")
     settings = Settings(env_file=env_path)
+    settings.CURRENCY_RATES_DICT = load_currency_rates_from_csv(os.path.join(base_dir, "currencies.csv"))
 
     print(f"Project Name: {settings.PROJECT_NAME}")
     print(f"API Prefix: {settings.API_PREFIX_STR}")

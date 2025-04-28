@@ -66,7 +66,7 @@ const CartPage = () => {
 
   const totalPrice = useMemo(() => {
     return books.reduce(
-      (total, book) => total + book.discount_price * book.quantity,
+      (total, book) => total + book.localize_discount_price * book.quantity,
       0
     );
   }, [books]);
@@ -139,7 +139,8 @@ const CartPage = () => {
             </h2>
             <div className="total mb-6 text-center">
               <p className="text-3xl font-bold text-gray-900">
-                ${totalPrice.toFixed(2)}
+                {books[0].price_symbol}
+                {totalPrice.toFixed(2)}
               </p>
             </div>
             <button

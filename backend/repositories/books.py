@@ -103,8 +103,6 @@ def get_books(
         review_count_label = "review_count"
         avg_rating_label = "average_rating"
         
-        # PostgreSQL needs all non-aggregated columns in GROUP BY
-        # Create a subquery to avoid GROUP BY issues with the base query columns
         popularity_subquery = (
             select(
                 Book.id,

@@ -49,6 +49,9 @@ export interface BookProfileCardProp {
 
 export interface DiscountedBookProfileCardProp extends BookProfileCardProp {
   discount_price: number;
+  price_symbol: string;
+  localize_price: number;
+  localize_discount_price: number;
 }
 
 export interface BookCartProps extends DiscountedBookProfileCardProp {

@@ -28,7 +28,7 @@ const BookProfileCard = ({ index, book }: BookProfileCardProps) => {
       <div className="w-full aspect-[3/4] overflow-hidden bg-gray-100">
         <img
           src={book.book_cover_photo || "https://placehold.co/300x400"}
-          alt={`Book cover ${book.book_title}`}
+          alt={`Book cover {book.price_symbol}{book.book_title}`}
           className="w-full h-full object-cover"
         />
       </div>
@@ -42,15 +42,18 @@ const BookProfileCard = ({ index, book }: BookProfileCardProps) => {
         {book.discount_price ? (
           <>
             <span className="text-gray-400 line-through text-sm mr-1">
-              ${safeParseFloat(book.book_price).toFixed(2)}
+              {book.price_symbol}
+              {safeParseFloat(book.localize_price).toFixed(2)}
             </span>
             <span className="text-red-500 font-bold">
-              ${safeParseFloat(book.discount_price).toFixed(2)}
+              {book.price_symbol}
+              {safeParseFloat(book.localize_discount_price).toFixed(2)}
             </span>
           </>
         ) : (
           <span className="text-gray-800 font-semibold">
-            ${safeParseFloat(book.book_price).toFixed(2)}
+            {book.price_symbol}
+            {safeParseFloat(book.localize_price).toFixed(2)}
           </span>
         )}
       </div>

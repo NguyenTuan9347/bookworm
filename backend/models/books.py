@@ -47,9 +47,12 @@ class BookCreate(BookBase):
 
 class BookRead(BookBase):
   id: int
-  author_name: Optional[str] 
-  discount_price: Optional[Decimal] = Field(sa_column=Column(Numeric(5, 2)))
-
+  price_symbol: Optional[str] = "$"
+  localize_price: Optional[Decimal] = None
+  localize_discount_price: Optional[Decimal] = None
+  author_name: Optional[str]
+  discount_price: Optional[Decimal]
+  
 class BookReadWithDetails(BookRead):
   category_name: Optional[str]
 
