@@ -1,7 +1,7 @@
 import { BookProfileCardProps } from "../../shared/interfaces";
 import { useNavigate } from "react-router-dom";
 import { constVar } from "@/shared/constVar";
-import { safeParseFloat } from "@/shared/utils";
+import { safeParseFloat, formatWithSymbol } from "@/shared/utils";
 const BookProfileCard = ({ index, book }: BookProfileCardProps) => {
   const navigate = useNavigate();
 
@@ -36,18 +36,24 @@ const BookProfileCard = ({ index, book }: BookProfileCardProps) => {
         {book.discount_price ? (
           <>
             <span className="text-gray-400 line-through text-sm mr-1">
-              {book.price_symbol}
-              {safeParseFloat(book.localize_price).toFixed(2)}
+              {formatWithSymbol(
+                safeParseFloat(book.localize_price),
+                book.price_symbol
+              )}
             </span>
             <span className="text-red-500 font-bold">
-              {book.price_symbol}
-              {safeParseFloat(book.localize_discount_price).toFixed(2)}
+              {formatWithSymbol(
+                safeParseFloat(book.localize_discount_price),
+                book.price_symbol
+              )}
             </span>
           </>
         ) : (
           <span className="text-gray-800 font-semibold">
-            {book.price_symbol}
-            {safeParseFloat(book.localize_price).toFixed(2)}
+            {formatWithSymbol(
+              safeParseFloat(book.localize_price),
+              book.price_symbol
+            )}
           </span>
         )}
       </div>

@@ -4,3 +4,10 @@ export const safeParseFloat = (value: string | number | undefined | null): numbe
   const parsed = parseFloat(String(value));
   return isNaN(parsed) ? 0 : parsed;
 };
+
+export const formatWithSymbol = (value: number, symbol: string, format: string = "en-US") => {
+  const formattedNumber = new Intl.NumberFormat(format).format(value);
+  return `${symbol}${formattedNumber}`;
+};
+
+
