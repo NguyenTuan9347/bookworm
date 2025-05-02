@@ -30,9 +30,7 @@ const BookGrid = ({
   const gridColsClassName = getGridColsClass(col_size);
 
   return (
-    <div
-      className={`grid ${gridColsClassName} gap-4 ${className} w-full h-full`}
-    >
+    <div className={`grid ${gridColsClassName} gap-4 ${className}`}>
       {itemsToDisplay.map((book, index) => (
         <BookProfileCard book={book} index={index} />
       ))}
