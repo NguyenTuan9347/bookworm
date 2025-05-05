@@ -6,9 +6,12 @@ import LoginPopUp from "../LoginPopUp/LoginPopUp";
 import { constVar } from "@/shared/constVar";
 import { getUserName } from "@/api/users";
 import Dropdown from "@/components/Dropdown/Dropdown";
+import { useLocation } from "react-router-dom";
 
 const NavBar = ({ links, signInMetadata }: NavBarProps) => {
-  const currentPath = window.location.pathname;
+  const location = useLocation();
+  const currentPath = location.pathname;
+
   const { isAuthenticated, authRequireAPIFetch, logout } = useAuth();
   const useCartStore = useCart();
   const books = useCartStore((state) => state.books);

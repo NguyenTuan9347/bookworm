@@ -106,7 +106,7 @@ def clear_database(session: Session):
     session.exec(Book.__table__.delete())
     session.exec(Category.__table__.delete())
     session.exec(Author.__table__.delete())
-    session.exec(User.__table__.delete().where(User.email != settings.ADMIN_EMAIL))
+    session.exec(User.__table__.delete())
     session.commit()
     print("Database cleared successfully!")
 
@@ -123,7 +123,17 @@ def generate_fake_data(
     """
     # Clear existing data first
     clear_database(session)
-    
+    from core.security import get_password_hash
+    user_in = UserCreate(
+        first_name="Tuan",
+        last_name="Nguyen",
+        email=settings.ADMIN_EMAIL,
+        password=settings.ADMIN_PASSWORD,
+        admin=True,
+    )
+    create_user(db_session=session, user_create=user_in)
+    session.commit()
+
     print(f"Generating {num_authors} authors...")
     # Create and persist authors
     authors = []
@@ -182,27 +192,11 @@ def generate_fake_data(
 
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 
-def init_db(session: Session) -> None:
-    """Initialize the database with the admin user if it doesn't exist."""
-    user = session.exec(
-        select(User).where(User.email == settings.ADMIN_EMAIL)
-    ).first()
-    if not user:
-        from core.security import get_password_hash
-        user_in = UserCreate(
-            first_name="admin",
-            last_name="admin",
-            email=settings.ADMIN_EMAIL,
-            password=settings.ADMIN_PASSWORD,
-            admin=True,
-        )
-        create_user(db_session=session, user_create=user_in)
-        session.commit()
+
         
 def main():
     """Main function to initialize the database and generate sample data."""
     with Session(engine) as session:
-        init_db(session)
         generate_fake_data(
             session=session,
             num_authors=1000,
