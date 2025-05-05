@@ -152,7 +152,7 @@ const BookPage = () => {
               <h3 className="mb-2 text-lg font-medium text-gray-700">
                 Book Description
               </h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed max-h-60 overflow-auto">
                 {book.book_summary}
               </p>
             </div>
